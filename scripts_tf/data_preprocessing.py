@@ -14,7 +14,7 @@ def compute_and_save_differences(landmarks: np.array, path: str) -> None:
     differences = np.zeros((landmarks.shape[0]-1, landmarks.shape[1]))
     for frame in range(differences.shape[0]):
         frame_path = os.path.join(path, str(frame))
-        differences[frame] = landmarks[frame+1] - differences[frame]
+        differences[frame] = landmarks[frame] - landmarks[frame+1]
         np.save(frame_path, differences[frame])
 
 def main():

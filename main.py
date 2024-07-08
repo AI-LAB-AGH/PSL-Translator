@@ -6,7 +6,11 @@ import keyboard
 import numpy as np
 import mediapipe as mp
 from collections import deque
-from training.transformers_pytorch import TransformerModel
+from torch.utils.data import DataLoader
+
+from model import TransformerModel
+from training import train, display_results
+from dataloader import DifferenceTransform, LandmarksDataset
 
 def process_image_and_extract_keypoints(cap, holistic):
     success, image = cap.read()
@@ -23,9 +27,7 @@ def process_image_and_extract_keypoints(cap, holistic):
     
     mp.solutions.drawing_utils.draw_landmarks(image, results.left_hand_landmarks, mp.solutions.holistic.HAND_CONNECTIONS)
     mp.solutions.drawing_utils.draw_landmarks(image, results.right_hand_landmarks, mp.solutions.holistic.HAND_CONNECTIONS)
-    
     keypoints = extract_keypoints(results)
-    
     return image, keypoints
 
 def extract_keypoints(results):
@@ -36,28 +38,14 @@ def extract_keypoints(results):
                 keypoints = np.append(keypoints, [landmark.x, landmark.y, landmark.z])
         else:
             keypoints = np.append(keypoints, np.zeros(21*3))
-            
     return keypoints
 
+def run_real_time_inference(model, actions, transform):
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Cannot access camera.")
+        exit()
 
-PATH = os.path.join('models', 'base_model_fixed_input_shape.pth')
-
-with open('labels_model_v1.json', 'r') as f:
-    label_map = json.load(f)
-    
-actions = np.array(list(label_map.keys()))
-
-input_shape = (30, 126)
-num_classes = len(actions)
-model = TransformerModel(input_dim=input_shape[1], num_classes=num_classes)
-model.load_state_dict(torch.load(PATH))
-
-cap = cv2.VideoCapture(0)
-if not cap.isOpened():
-    print("Cannot access camera.")
-    exit()
-
-def main():
     with mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75) as holistic:
         action_text = "" 
         while cap.isOpened():
@@ -77,11 +65,12 @@ def main():
                         cap.release()
                         cv2.destroyAllWindows()
                         return
+                
             keypoints = deque(maxlen=30)
             print("Recognizing the action....") 
             while len(keypoints) < 30:
                 image, keypoint = process_image_and_extract_keypoints(cap, holistic)
-                height,  width, _ = image.shape
+                height, width, _ = image.shape
                 cv2.putText(image, "wykrywanie gestu", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2, cv2.LINE_AA)
                 cv2.imshow('Camera', image)
                 keypoints.append(keypoint)
@@ -90,8 +79,8 @@ def main():
                     cv2.destroyAllWindows()
                     return   
                                       
-            keypoints_tensor = torch.tensor(keypoints, dtype=torch.float32).unsqueeze(0)
-            output = model(keypoints_tensor)
+            input = transform()(keypoints).unsqueeze(0)
+            output = model(input)
             prob, predicted_index = torch.max(output, dim=1)
 
             predicted_action = actions[predicted_index.item()]
@@ -105,6 +94,49 @@ def main():
 
         cap.release()
         cv2.destroyAllWindows()
+
+
+root_dir_train = 'data/landmarks/train'
+root_dir_test = 'data/landmarks/test'
+annotations_train = 'data/landmarks/annotations_train.csv'
+annotations_test = 'data/landmarks/annotations_test.csv'
+labels = 'labels_model_v1.json'
+with open(labels, 'r', encoding='utf-8') as f:
+    label_map = json.load(f)
+actions = np.array(list(label_map.keys()))
+model_path = os.path.join('models', 'base_model_fixed_input_shape.pth')
+
+
+def main():
+    num_epochs = 50
+    batch_size = 32
+    lr = 0.001
+    criterion = torch.nn.CrossEntropyLoss
+    optimizer = torch.optim.Adam
+    transform = DifferenceTransform
+    save = False
+    from_checkpoint = False
+    
+    input_shape = (29, 126)
+    num_classes = len(label_map)
+    model = TransformerModel(input_dim=input_shape[1], num_classes=num_classes)
+
+    if from_checkpoint:
+        model.load_state_dict(torch.load(model_path))
+    else:
+        print('Loading training set...')
+        train_dataset = LandmarksDataset(root_dir_train, annotations_train, label_map, transform)
+        print('Done. Loading testing set...')
+        test_dataset = LandmarksDataset(root_dir_test, annotations_test, label_map, transform)
+        print('Done. Starting training...')
+
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+        results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, save)
+        display_results(results, actions)
+        
+    run_real_time_inference(model, actions, transform)
 
 if __name__ == "__main__":
     main()
