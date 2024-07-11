@@ -4,6 +4,7 @@ import torch
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 def train(model: torch.nn.Module,
           train_loader: torch.utils.data.DataLoader,
           test_loader: torch.utils.data.DataLoader,
@@ -13,6 +14,8 @@ def train(model: torch.nn.Module,
           optim=torch.optim.Adam,
           save=True) -> dict:
     
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
     criterion = crit()
     optimizer = optim(model.parameters(), lr)
     history = {'epoch': [], 'loss': [], 'accuracy': []}
@@ -20,7 +23,8 @@ def train(model: torch.nn.Module,
     for epoch in range(num_epochs):
         model.train()
         running_loss = 0.0
-        for inputs, labels in train_loader:
+        for data in train_loader:
+            inputs, labels = data[0].to(device), data[1].to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
