@@ -4,12 +4,20 @@ import torch
 import numpy as np
 from torch.utils.data import Dataset
 
-class DifferenceTransform:
+class DistFromConsecTransform:
     def __call__(self, landmarks: list) -> torch.tensor:
         landmarks = torch.tensor(np.array(landmarks))
         differences = torch.zeros([landmarks.shape[0]-1, landmarks.shape[1]])
         for frame in range(differences.shape[0]):
             differences[frame] = landmarks[frame] - landmarks[frame+1]
+        return differences
+
+class DistFromFirstTransform:
+    def __call__(self, landmarks: list) -> torch.tensor:
+        landmarks = torch.tensor(np.array(landmarks))
+        differences = torch.zeros([landmarks.shape[0]-1, landmarks.shape[1]])
+        for frame in range(differences.shape[0]):
+            differences[frame] = landmarks[frame+1] - landmarks[0]
         return differences
 
 class LandmarksDataset(Dataset):
@@ -44,3 +52,6 @@ class LandmarksDataset(Dataset):
             label = self.target_transform(label)
 
         return sample, label
+    
+class JesterDataset(Dataset):
+    pass

@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 from model import TransformerModel
 from training import train, display_results
-from dataloader import DifferenceTransform, LandmarksDataset
+from dataloader import DistFromConsecTransform, DistFromFirstTransform, LandmarksDataset
 
 def process_image_and_extract_keypoints(cap, holistic):
     success, image = cap.read()
@@ -95,7 +95,6 @@ def run_real_time_inference(model, actions, transform):
         cap.release()
         cv2.destroyAllWindows()
 
-
 root_dir_train = 'data/landmarks/train'
 root_dir_test = 'data/landmarks/test'
 annotations_train = 'data/landmarks/annotations_train.csv'
@@ -113,7 +112,7 @@ def main():
     lr = 0.001
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
-    transform = DifferenceTransform
+    transform = DistFromFirstTransform
     save = False
     from_checkpoint = False
     
