@@ -4,7 +4,6 @@ import torch
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
 def train(model: torch.nn.Module,
           train_loader: torch.utils.data.DataLoader,
           test_loader: torch.utils.data.DataLoader,
@@ -12,7 +11,7 @@ def train(model: torch.nn.Module,
           lr = 0.001,
           crit=torch.nn.CrossEntropyLoss,
           optim=torch.optim.Adam,
-          save=True) -> dict:
+          save_path=None) -> dict:
     
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model.to(device)
@@ -52,8 +51,8 @@ def train(model: torch.nn.Module,
     with open('training_history.json', 'w') as f:
         json.dump(history, f)
     
-    if save:
-        torch.save(model.state_dict(), 'transformer_model.pth')
+    if save_path is not None:
+        torch.save(model.state_dict(), save_path)
 
     model.eval()
     all_preds = []
