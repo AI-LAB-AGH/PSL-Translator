@@ -1,4 +1,7 @@
 # Datasets
+data/*/*/
+data/*/*.csv
+data/*/*.json
 
 # Byte-compiled / optimized / DLL files
 *__pycache__/
@@ -167,8 +170,6 @@ data_old
 .data_old
 data_old/
 .data_old/
-data/
-data
 .data
 .data/
 /data_old/
