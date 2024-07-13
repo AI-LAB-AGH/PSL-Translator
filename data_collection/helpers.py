@@ -1,5 +1,7 @@
 import os
 import cv2
+import time
+import mediapipe as mp
 
 
 """
@@ -35,3 +37,35 @@ def add_window_text(image: cv2.UMat, action: str):
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
 
 
+def draw_landmarks(cap, holistic) -> cv2.UMat:
+    success, image = cap.read()
+    if not success:
+        print("Failed to capture image.")
+        return None
+
+    image = cv2.flip(image, 1)  # show mirrored view for the sake of convenience
+    # the following lines are apparently necessary for landmark drawing to work
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image.flags.writeable = False
+    results = holistic.process(image)
+    image.flags.writeable = True
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    mp.solutions.drawing_utils.draw_landmarks(image, results.left_hand_landmarks,
+                                              mp.solutions.holistic.HAND_CONNECTIONS)
+    mp.solutions.drawing_utils.draw_landmarks(image, results.right_hand_landmarks,
+                                              mp.solutions.holistic.HAND_CONNECTIONS)
+    return image
+
+
+def countdown(cap, holistic):
+    start = time.time()
+    while time.time() < start + 3:
+        seconds_left = int(start + 3 - time.time()) + 1
+        image = draw_landmarks(cap, holistic)
+        cv2.putText(image, f'Begin in {seconds_left}', (250, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2,
+                    cv2.LINE_AA)
+        cv2.imshow('Camera', image)
+
+        # without cv2.waitKey the window freezes for some reason
+        if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
+            break

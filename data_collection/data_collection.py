@@ -1,5 +1,3 @@
-import cv2
-import mediapipe as mp
 import numpy as np
 import keyboard
 
@@ -35,26 +33,6 @@ def save_image(cap, subset, sample_num, frame, path):
 
     if frame is not None:
         cv2.imwrite(os.path.join(path, subset, str(sample_num), f'{frame}.jpg'), image)
-
-
-def draw_landmarks(cap, holistic) -> cv2.UMat:
-    success, image = cap.read()
-    if not success:
-        print("Failed to capture image.")
-        return None
-
-    image = cv2.flip(image, 1)  # show mirrored view for the sake of convenience
-    # the following lines are apparently necessary for landmark drawing to work
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image.flags.writeable = False
-    results = holistic.process(image)
-    image.flags.writeable = True
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    mp.solutions.drawing_utils.draw_landmarks(image, results.left_hand_landmarks,
-                                              mp.solutions.holistic.HAND_CONNECTIONS)
-    mp.solutions.drawing_utils.draw_landmarks(image, results.right_hand_landmarks,
-                                              mp.solutions.holistic.HAND_CONNECTIONS)
-    return image
 
 
 def main():
@@ -94,6 +72,11 @@ def main():
                 create_directory(f'train/{n_samples}')
                 subset = 'train'
             print(f"Collection of data for: {action} sequence no: {sequence}.")
+
+            # Give the user 3 seconds to get their hand of the space bar and prepare to show the gesture
+            # as soon as the recording commences
+            countdown(cap, holistic)
+
             for frame in range(frames):
                 save_image(cap, subset, n_samples, frame, PATH)
                 image = draw_landmarks(cap, holistic)
