@@ -20,13 +20,13 @@ def draw_landmarks_and_save_image(cap, holistic, subset, sample_num, frame, path
     image = cv2.flip(image, 1)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image.flags.writeable = False
-    results = holistic.process(image)
     image.flags.writeable = True
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
     if frame is not None:
         cv2.imwrite(os.path.join(path, subset, str(sample_num), f'{frame}.jpg'), image)
 
+    results = holistic.process(image)
     mp.solutions.drawing_utils.draw_landmarks(image, results.left_hand_landmarks,
                                               mp.solutions.holistic.HAND_CONNECTIONS)
     mp.solutions.drawing_utils.draw_landmarks(image, results.right_hand_landmarks,
@@ -77,12 +77,11 @@ def main():
                 cv2.putText(image, f"Collecting frames. Action: {action} frame no: {frame}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
                 cv2.imshow('Camera', image)
 
-                if cv2.waitKey(1) & 0xFF == 27:
-                    break
             annotate_sample(n_samples, ACTION_TO_IDX[action])
 
-            if cv2.waitKey(1) & 0xFF == 27:
+            if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
                 break
+
             n_samples += 1
 
     cap.release()
