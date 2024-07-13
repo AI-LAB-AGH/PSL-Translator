@@ -1,3 +1,4 @@
+import cv2
 import mediapipe as mp
 import numpy as np
 import keyboard
@@ -11,27 +12,32 @@ def annotate_sample(sample_num: int, class_idx: int):
         f.write(f'{sample_num}, {class_idx}\n')
 
 
-def draw_landmarks_and_save_image(cap, holistic, subset, sample_num, frame, path):
+def save_image(cap, subset, sample_num, frame, path):
     success, image = cap.read()
     if not success:
         print("Failed to capture image.")
         return False
 
-    image = cv2.flip(image, 1)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image.flags.writeable = False
-    image.flags.writeable = True
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
     if frame is not None:
         cv2.imwrite(os.path.join(path, subset, str(sample_num), f'{frame}.jpg'), image)
 
+
+def draw_landmarks(cap, holistic) -> cv2.UMat:
+    success, image = cap.read()
+    if not success:
+        print("Failed to capture image.")
+        return None
+
+    image = cv2.flip(image, 1)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image.flags.writeable = False
     results = holistic.process(image)
+    image.flags.writeable = True
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     mp.solutions.drawing_utils.draw_landmarks(image, results.left_hand_landmarks,
                                               mp.solutions.holistic.HAND_CONNECTIONS)
     mp.solutions.drawing_utils.draw_landmarks(image, results.right_hand_landmarks,
                                               mp.solutions.holistic.HAND_CONNECTIONS)
-
     return image
 
 
@@ -52,7 +58,7 @@ def main():
         action = actions[action_idx]
         for sequence in range(sequences):
             while not keyboard.is_pressed(' '):
-                image = draw_landmarks_and_save_image(cap, holistic, action, sequence, None, PATH)
+                image = draw_landmarks(cap, holistic)
                 add_window_text(image, action)
                 cv2.imshow('Camera', image)
                 if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
@@ -73,9 +79,14 @@ def main():
                 subset = 'train'
             print(f"Collection of data for: {action} sequence no: {sequence}.")
             for frame in range(frames):
-                image = draw_landmarks_and_save_image(cap, holistic, subset, n_samples, frame, PATH)
+                save_image(cap, subset, n_samples, frame, PATH)
+                image = draw_landmarks(cap, holistic)
                 cv2.putText(image, f"Collecting frames. Action: {action} frame no: {frame}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
                 cv2.imshow('Camera', image)
+
+                # cv2.waitKey essentially serves as a sleep function here, it causes a slight delay
+                if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
+                    break
 
             annotate_sample(n_samples, ACTION_TO_IDX[action])
 
