@@ -11,11 +11,12 @@ from actions import ACTION_TO_IDX
 Run this file on its own to collect new data samples.
 For this to work you need to create the following directory structure (data is in .gitignore):
 
-- data
-  - RGB
-    - train
-    - test
-  - annotations.csv
+- PSL-Translator
+  - data
+    - RGB
+      - train
+      - test
+      - annotations.csv
 
 annotations.csv should have 2 columns 'sample_idx' and 'class_idx' respectively
 """
