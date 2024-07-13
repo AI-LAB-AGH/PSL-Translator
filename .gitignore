@@ -1,10 +1,10 @@
 # Datasets
 data/jester/*.csv
 data/jester/*.json
-data/jester/*/
+data/jester/*/*
 data/landmarks/*.csv
 data/landmarks/*.json
-data/landmarks/*/
+data/landmarks/*/*
 
 # Byte-compiled / optimized / DLL files
 *__pycache__/
