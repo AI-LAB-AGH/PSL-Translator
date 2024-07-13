@@ -11,7 +11,8 @@ from torchvision import transforms
 from model_transformer import TransformerModel
 from model_LSTM import LSTMModel
 from training import train, display_results
-from dataloader import ComputeDistSource, ComputeDistFirst, ExtractLandmarks, LandmarksDataset
+from dataloader import ComputeDistSource, ComputeDistFirst, ExtractLandmarks, LandmarksDataset, JesterDataset
+
 
 def draw_landmarks(img, holistic):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -22,6 +23,7 @@ def draw_landmarks(img, holistic):
     mp.solutions.drawing_utils.draw_landmarks(img, results.right_hand_landmarks, mp.solutions.holistic.HAND_CONNECTIONS)
     
     return img
+
 
 def run_real_time_inference(model, actions, holistic, transform):
     cap = cv2.VideoCapture(0)
@@ -91,48 +93,58 @@ def run_real_time_inference(model, actions, holistic, transform):
     cap.release()
     cv2.destroyAllWindows()
 
-root_dir_train = 'data/landmarks/train'
-root_dir_test = 'data/landmarks/test'
-annotations_train = 'data/landmarks/annotations_train.csv'
-annotations_test = 'data/landmarks/annotations_test.csv'
-labels = 'labels_model_v1.json'
+model_type = 'lstm'
+dataset = 'jester'
+root_dir_train = 'data/'+dataset+'/train'
+root_dir_test = 'data/'+dataset+'/test'
+annotations_train = 'data/'+dataset+'/annotations_train.csv'
+annotations_test = 'data/'+dataset+'/annotations_test.csv'
+labels = 'data/'+dataset+'/labels.json'
 with open(labels, 'r', encoding='utf-8') as f:
     label_map = json.load(f)
 actions = np.array(list(label_map.keys()))
-model_path = 'LSTM_model.pth'
+model_path = 'models/'+model_type+'_model.pth'
 
 
 def main():
-    model_type = 'lstm'
     holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
     num_epochs = 10
-    batch_size = 32
+    batch_size = 1
     lr = 0.001
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
     transform = transforms.Compose([ExtractLandmarks(holistic),
                                     ComputeDistSource()])
-    from_checkpoint = True
+    from_checkpoint = False
     
     input_shape = (29, 126)
     hidden_size = 20
     num_layers = 1
     num_classes = len(label_map)
 
-    if model_type == 'transformer':
-        model = TransformerModel(input_dim=input_shape[1], num_classes=num_classes)
-    elif model_type == 'lstm':
-        model = LSTMModel(input_shape[1], hidden_size, num_layers, num_classes)
+    match model_type:
+        case 'transformer':
+            model = TransformerModel(input_shape[1], num_classes)
+
+        case 'lstm':
+            model = LSTMModel(input_shape[1], hidden_size, num_layers, num_classes)
 
     if from_checkpoint:
         model.load_state_dict(torch.load(model_path))
     else:
         print('Loading training set...')
-        train_dataset = LandmarksDataset(root_dir_train, annotations_train, label_map, transform)
-        print('Done. Loading testing set...')
-        test_dataset = LandmarksDataset(root_dir_test, annotations_test, label_map, transform)
-        print('Done. Starting training...')
+        match dataset:
+            case 'landmarks':
+                train_dataset = LandmarksDataset(root_dir_train, annotations_train, label_map, transform)
+                print('\nDone. Loading testing set...')
+                test_dataset = LandmarksDataset(root_dir_test, annotations_test, label_map, transform)
+                
+            case 'jester':
+                train_dataset = JesterDataset(root_dir_train, annotations_train, label_map, transform, None, 50)
+                print('\nDone. Loading testing set...')
+                test_dataset = JesterDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
 
+        print('\nDone. Starting training...')
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
