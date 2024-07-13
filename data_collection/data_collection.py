@@ -9,19 +9,23 @@ from actions import ACTION_TO_IDX
 Run this file on its own to collect new data samples.
 For this to work you need to create the following directory structure (data is in .gitignore):
 
-- PSL-Translator
-  - data
-    - RGB
-      - train
-      - test
-      - annotations.csv
+- PSL-Translator/
+  - data/
+    - RGB/
+      - train/
+      - test/
+      - annotations_train.csv
+      - annotations_test.csv
 
-annotations.csv should have 2 columns 'sample_idx' and 'class_idx' respectively
+annotations_train.csv should have 2 columns 'sample_idx' and 'class_idx' respectively
 """
 
 
-def annotate_sample(sample_num: int, class_idx: int):
-    with open(os.path.join(PATH, 'annotations.csv'), 'a') as f:
+def annotate_sample(sample_num: int, class_idx: int, subset: str):
+    """
+    subset is supposed to only take values {'train', 'test'}
+    """
+    with open(os.path.join(PATH, f'annotations_{subset}.csv'), 'a') as f:
         f.write(f'{sample_num}, {class_idx}\n')
 
 
@@ -87,7 +91,7 @@ def main():
                 if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
                     break
 
-            annotate_sample(n_samples, ACTION_TO_IDX[action])
+            annotate_sample(n_samples, ACTION_TO_IDX[action], subset)
 
             if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
                 break
