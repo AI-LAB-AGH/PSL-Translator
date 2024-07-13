@@ -7,6 +7,20 @@ from helpers import *
 from actions import ACTION_TO_IDX
 
 
+"""
+Run this file on its own to collect new data samples.
+For this to work you need to create the following directory structure (data is in .gitignore):
+
+- data
+  - RGB
+    - train
+    - test
+  - annotations.csv
+
+annotations.csv should have 2 columns 'sample_idx' and 'class_idx' respectively
+"""
+
+
 def annotate_sample(sample_num: int, class_idx: int):
     with open(os.path.join(PATH, 'annotations.csv'), 'a') as f:
         f.write(f'{sample_num}, {class_idx}\n')
