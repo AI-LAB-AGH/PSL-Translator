@@ -5,35 +5,41 @@ import numpy as np
 from skimage import io
 from torch.utils.data import Dataset
 
+
 class ComputeDistConsec:
     def __call__(self, sample: list) -> torch.tensor:
         sample = torch.tensor(np.array(sample))
-        differences = torch.zeros([sample.shape[0]-1, sample.shape[1]])
+        differences = torch.zeros([sample.shape[0] - 1, sample.shape[1]])
         for frame in range(differences.shape[0]):
-            differences[frame] = sample[frame] - sample[frame+1]
+            differences[frame] = sample[frame] - sample[frame + 1]
         return differences
+
 
 class ComputeDistFirst:
     def __call__(self, sample: list) -> torch.tensor:
         sample = torch.tensor(np.array(sample))
-        differences = torch.zeros([sample.shape[0]-1, sample.shape[1]])
+        differences = torch.zeros([sample.shape[0] - 1, sample.shape[1]])
         for frame in range(differences.shape[0]):
-            differences[frame] = sample[frame+1] - sample[0]
+            differences[frame] = sample[frame + 1] - sample[0]
         return differences
-    
+
+
 class ComputeDistSource:
     def __call__(self, sample: list) -> torch.tensor:
         sample = torch.tensor(np.array(sample), dtype=torch.float32)
         sample = torch.reshape(sample, (sample.shape[0], 42, 3))
 
-        source = torch.tensor(np.array([list(sample[0][0]) for landmark in range(21)] + [list(sample[0][21]) for landmark in range(21)]))  # right(?) hand
+        source = torch.tensor(np.array(
+            [list(sample[0][0]) for landmark in range(21)] + [list(sample[0][21]) for landmark in
+                                                              range(21)]))  # right(?) hand
 
         for frame in range(sample.shape[0]):
             sample[frame] -= source
 
-        sample = torch.reshape(sample, (sample.shape[0], 42*3))
+        sample = torch.reshape(sample, (sample.shape[0], 42 * 3))
         return sample
-    
+
+
 class ExtractLandmarks:
     def __init__(self, holistic):
         self.holistic = holistic
@@ -42,7 +48,7 @@ class ExtractLandmarks:
         # Landmarks already extracted
         if len(sample[0].shape) != 3:
             return sample
-        
+
         processed = []
         for frame in sample:
             results = self.holistic.process(frame)
@@ -52,10 +58,11 @@ class ExtractLandmarks:
                     for landmark in landmark_list.landmark:
                         keypoints = np.append(keypoints, [landmark.x, landmark.y, landmark.z])
                 else:
-                    keypoints = np.append(keypoints, np.zeros(21*3))
+                    keypoints = np.append(keypoints, np.zeros(21 * 3))
             processed.append(keypoints.copy())
         return processed
-    
+
+
 class LandmarksDataset(Dataset):
     def __init__(self, root_dir: str, annotations: str, labels_map: dict, transform=None, target_transform=None):
         self.root_dir = root_dir
@@ -88,7 +95,8 @@ class LandmarksDataset(Dataset):
             label = self.target_transform(label)
 
         return sample, label
-    
+
+
 class JesterDataset(Dataset):
     def __init__(self, root_dir: str, annotations: str, labels_map: dict, transform=None, target_transform=None):
         self.root_dir = root_dir
