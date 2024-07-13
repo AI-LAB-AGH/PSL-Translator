@@ -11,7 +11,7 @@ from torchvision import transforms
 from model_transformer import TransformerModel
 from model_LSTM import LSTMModel
 from training import train, display_results
-from dataloader import ComputeDistConsec, ComputeDistFirst, ExtractLandmarks, LandmarksDataset, JesterDataset
+from dataloader import ComputeDistSource, ComputeDistFirst, ExtractLandmarks, LandmarksDataset
 
 def draw_landmarks(img, holistic):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -73,14 +73,17 @@ def run_real_time_inference(model, actions, holistic, transform):
                                     
         input = transform(frames).unsqueeze(0) # extract keypoints, compute difference
         output = model(input)
-        print(output)
+        output[0] = torch.nn.functional.softmax(output[0])
         confidence, predicted_index = torch.max(output, dim=1)
         predicted_action = actions[predicted_index.item()]
         frames = []
 
-        if confidence > 0.1:
+        if confidence > 0.2:
             action_text = f"{predicted_action}"
             print(f"Recognized action: {predicted_action} with confidence: {confidence.item():.2f}")
+        else:
+            print(f"Unknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}")
+
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -96,7 +99,7 @@ labels = 'labels_model_v1.json'
 with open(labels, 'r', encoding='utf-8') as f:
     label_map = json.load(f)
 actions = np.array(list(label_map.keys()))
-model_path = os.path.join('models', 'base_model_fixed_input_shape.pth')
+model_path = 'LSTM_model.pth'
 
 
 def main():
@@ -108,9 +111,8 @@ def main():
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
     transform = transforms.Compose([ExtractLandmarks(holistic),
-                                    ComputeDistFirst()])
-    save_path = 'LSTM_model.pth'
-    from_checkpoint = False
+                                    ComputeDistSource()])
+    from_checkpoint = True
     
     input_shape = (29, 126)
     hidden_size = 20
@@ -134,7 +136,7 @@ def main():
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-        results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, save_path)
+        results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         display_results(results, actions)
         
     run_real_time_inference(model, actions, holistic, transform)
