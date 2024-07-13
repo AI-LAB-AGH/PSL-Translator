@@ -51,9 +51,6 @@ def main():
         action_idx = 0
         action = actions[action_idx]
         for sequence in range(sequences):
-            print(f"Collecting data for: {action}.")
-            print("Press space to start recording, right arrow to skip to the next action, esc to exit.")
-
             while not keyboard.is_pressed(' '):
                 image = draw_landmarks_and_save_image(cap, holistic, action, sequence, None, PATH)
                 add_window_text(image, action)
@@ -74,10 +71,10 @@ def main():
             else:
                 create_directory(f'train/{n_samples}')
                 subset = 'train'
-            print(f"Collection data for: {action} sequence no: {sequence}.")
+            print(f"Collection of data for: {action} sequence no: {sequence}.")
             for frame in range(frames):
                 image = draw_landmarks_and_save_image(cap, holistic, subset, n_samples, frame, PATH)
-                cv2.putText(image, f"Collecting frames. Action: {action} frame no: {frame}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2, cv2.LINE_AA)
+                cv2.putText(image, f"Collecting frames. Action: {action} frame no: {frame}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
                 cv2.imshow('Camera', image)
 
                 if cv2.waitKey(1) & 0xFF == 27:
