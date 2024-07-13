@@ -31,7 +31,7 @@ class ComputeDistSource:
 
         source = torch.tensor(np.array(
             [list(sample[0][0]) for landmark in range(21)] + [list(sample[0][21]) for landmark in
-                                                              range(21)]))  # right(?) hand
+                                                              range(21)]))
 
         for frame in range(sample.shape[0]):
             sample[frame] -= source
@@ -98,7 +98,7 @@ class LandmarksDataset(Dataset):
 
 
 class JesterDataset(Dataset):
-    def __init__(self, root_dir: str, annotations: str, labels_map: dict, transform=None, target_transform=None):
+    def __init__(self, root_dir: str, annotations: str, labels_map: dict, transform=None, target_transform=None, max_samples=200):
         self.root_dir = root_dir
         self.samples = {idx: dirname for idx, dirname in enumerate(os.listdir(root_dir))}
         with open(annotations, mode='r', encoding='utf-8') as f:
@@ -109,13 +109,16 @@ class JesterDataset(Dataset):
         self.target_transform = target_transform
 
         self.data = {}
-        for idx, dirname in self.samples.items():
+        for i, (idx, dirname) in enumerate(self.samples.items()):
             path = os.path.join(self.root_dir, dirname)
             frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
             self.data[idx] = [io.imread(os.path.join(path, frame)) for frame in frames]
+            print(f'\rLoaded sample {i} of {max_samples}', end='')
+            if len(self.data) == max_samples:
+                break
 
     def __len__(self):
-        return len(self.samples)
+        return len(self.data)
 
     def __getitem__(self, idx):
         sample = self.data[idx]

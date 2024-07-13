@@ -43,4 +43,4 @@ class TransformerModel(nn.Module):
         x = self.global_avg_pool(x).squeeze(-1)
         x = F.relu(self.dense2(x))
         x = self.dropout(x)
-        return self.out(x)
+        return F.softmax(self.out(x), dim=1)

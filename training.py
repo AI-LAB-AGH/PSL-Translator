@@ -22,8 +22,8 @@ def train(model: torch.nn.Module,
     for epoch in range(num_epochs):
         model.train()
         running_loss = 0.0
-        for data in train_loader:
-            print('Batch started')
+        for i, data in enumerate(train_loader):
+            print(f'\rTraining. Batch {i} of {len(train_loader)} started', end='')
             inputs, labels = data[0].to(device), data[1].to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
@@ -31,16 +31,20 @@ def train(model: torch.nn.Module,
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
+        print('\nTraining finished')
 
         model.eval()
         all_preds = []
         all_labels = []
         with torch.no_grad():
-            for inputs, labels in train_loader:
+            for i, data in enumerate(test_loader):
+                print(f'\rValidation. Batch {i} of {len(test_loader)} started', end='')
+                inputs, labels = data[0].to(device), data[1].to(device)
                 outputs = model(inputs)
                 _, preds = torch.max(outputs, 1)
                 all_preds.extend(preds.cpu().numpy())
                 all_labels.extend(labels.cpu().numpy())
+        print('\nValidation finished')
         
         accuracy = accuracy_score(all_labels, all_preds)
         history['epoch'].append(epoch + 1)
