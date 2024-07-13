@@ -23,6 +23,7 @@ def train(model: torch.nn.Module,
         model.train()
         running_loss = 0.0
         for data in train_loader:
+            print('Batch started')
             inputs, labels = data[0].to(device), data[1].to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
