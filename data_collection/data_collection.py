@@ -28,7 +28,8 @@ def draw_landmarks(cap, holistic) -> cv2.UMat:
         print("Failed to capture image.")
         return None
 
-    image = cv2.flip(image, 1)
+    image = cv2.flip(image, 1)  # show mirrored view for the sake of convenience
+    # the following lines are apparently necessary for landmark drawing to work
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image.flags.writeable = False
     results = holistic.process(image)
@@ -44,7 +45,7 @@ def draw_landmarks(cap, holistic) -> cv2.UMat:
 def main():
     actions = np.array(list(ACTION_TO_IDX.keys()))
     sequences = 100  # max number of samples to record
-    frames = 30 # frames per sample
+    frames = 30  # frames per sample
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
