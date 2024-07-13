@@ -4,12 +4,12 @@ import numpy as np
 def create_directory(action):
     if not os.path.exists(os.path.join("data_updated/", action)):
         os.makedirs(os.path.join("data_updated/", action))
-    
+
     sequence_list = os.listdir(os.path.join("data_updated/", action))
     sequences_no = len(sequence_list)
-    
+
     os.makedirs(os.path.join("data_updated/", action, str(sequences_no)), exist_ok=True)
-    
+
 def compute_and_save_differences(landmarks: np.array, path: str) -> None:
     differences = np.zeros((landmarks.shape[0]-1, landmarks.shape[1]))
     for frame in range(differences.shape[0]):
