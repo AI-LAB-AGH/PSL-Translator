@@ -64,11 +64,19 @@ def main():
                     cv2.destroyAllWindows()
                     return
                 if keyboard.is_pressed('right'):
-                    action_idx += 1
+                    if action_idx < len(actions) - 1:
+                        action_idx += 1
+                    else:
+                        action_idx = 0
                     action = actions[action_idx]
+                    cv2.waitKey(100)
                 if keyboard.is_pressed('left'):
-                    action_idx -= 1
+                    if action_idx > 0:
+                        action_idx -= 1
+                    else:
+                        action_idx = len(actions) - 1
                     action = actions[action_idx]
+                    cv2.waitKey(100)
             if n_samples % 5 == 0:
                 create_directory(f'test/{n_samples}')
                 subset = 'test'
