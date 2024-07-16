@@ -23,28 +23,32 @@ def train(model: torch.nn.Module,
         model.train()
         running_loss = 0.0
         for i, data in enumerate(train_loader):
-            print(f'\rTraining. Batch {i} of {len(train_loader)} started', end='')
-            inputs, labels = data[0].to(device), data[1].to(device)
+            # print(f'\rTraining. Batch {i} of {len(train_loader)} started', end='')
+            (lefts, rights), labels = data
+
             optimizer.zero_grad()
-            outputs = model(inputs)
+            outputs = model(lefts, rights)
             loss = criterion(outputs, labels)
+
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-        print('\nTraining finished')
+        print('Training finished')
 
         model.eval()
         all_preds = []
         all_labels = []
         with torch.no_grad():
             for i, data in enumerate(test_loader):
-                print(f'\rValidation. Batch {i} of {len(test_loader)} started', end='')
-                inputs, labels = data[0].to(device), data[1].to(device)
-                outputs = model(inputs)
+                # print(f'\rValidation. Batch {i} of {len(test_loader)} started', end='')
+                (lefts, rights), labels = data
+
+                outputs = model(lefts, rights)
+
                 _, preds = torch.max(outputs, 1)
                 all_preds.extend(preds.cpu().numpy())
                 all_labels.extend(labels.cpu().numpy())
-        print('\nValidation finished')
+        print('Validation finished')
         
         accuracy = accuracy_score(all_labels, all_preds)
         history['epoch'].append(epoch + 1)
@@ -63,8 +67,9 @@ def train(model: torch.nn.Module,
     all_preds = []
     all_labels = []
     with torch.no_grad():
-        for inputs, labels in test_loader:
-            outputs = model(inputs)
+        for (lefts, rights), labels in test_loader:
+            outputs = model(lefts, rights)
+            
             _, preds = torch.max(outputs, 1)
             all_preds.extend(preds.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
