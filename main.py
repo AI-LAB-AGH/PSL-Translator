@@ -11,7 +11,7 @@ from torchvision import transforms
 from model_transformer import TransformerModel
 from model_LSTM import LSTMModel
 from training import train, display_results
-from dataloader import ComputeDistSource, ComputeDistFirst, ExtractLandmarks, LandmarksDataset, JesterDataset
+from dataloader import ComputeDistSource, ComputeDistFirst, ComputeDistNet, ExtractLandmarks, LandmarksDataset, FramesDataset
 
 
 def draw_landmarks(img, holistic):
@@ -60,21 +60,28 @@ def run_real_time_inference(model, actions, holistic, transform):
             success, img = cap.read()
             if not success:
                 print("Failed to capture image.")
-                return False
+                return True
             
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            frames.append(img)
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
             img = draw_landmarks(img, holistic)
             height, width, _ = img.shape
             cv2.putText(img, "wykrywanie gestu", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2, cv2.LINE_AA)
             cv2.imshow('Camera', img)
-            frames.append(img)
 
             if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
                 cap.release()
                 cv2.destroyAllWindows()
                 return   
-                                    
-        input = transform(frames).unsqueeze(0) # extract keypoints, compute difference
-        output = model(input)
+
+        left, right = transform(frames)
+        print(left.shape, right.shape)
+        left = left.unsqueeze(0)
+        right = right.unsqueeze(0)
+
+        output = model(left, right)
         output[0] = torch.nn.functional.softmax(output[0])
         confidence, predicted_index = torch.max(output, dim=1)
         predicted_action = actions[predicted_index.item()]
@@ -94,7 +101,7 @@ def run_real_time_inference(model, actions, holistic, transform):
     cv2.destroyAllWindows()
 
 model_type = 'lstm'
-dataset = 'jester'
+dataset = 'RGB'
 root_dir_train = 'data/'+dataset+'/train'
 root_dir_test = 'data/'+dataset+'/test'
 annotations_train = 'data/'+dataset+'/annotations_train.csv'
@@ -108,16 +115,16 @@ model_path = 'models/'+model_type+'_model.pth'
 
 def main():
     holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
-    num_epochs = 10
+    num_epochs = 30
     batch_size = 1
     lr = 0.001
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
     transform = transforms.Compose([ExtractLandmarks(holistic),
-                                    ComputeDistSource()])
+                                    ComputeDistNet()])
     from_checkpoint = False
     
-    input_shape = (29, 126)
+    input_shape = (29, 21*3)
     hidden_size = 20
     num_layers = 1
     num_classes = len(label_map)
@@ -140,9 +147,14 @@ def main():
                 test_dataset = LandmarksDataset(root_dir_test, annotations_test, label_map, transform)
                 
             case 'jester':
-                train_dataset = JesterDataset(root_dir_train, annotations_train, label_map, transform, None, 50)
+                train_dataset = FramesDataset(root_dir_train, annotations_train, label_map, transform, None, 50)
                 print('\nDone. Loading testing set...')
-                test_dataset = JesterDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
+                test_dataset = FramesDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
+
+            case 'RGB':
+                train_dataset = FramesDataset(root_dir_train, annotations_train, label_map, transform, None, 50)
+                print('\nDone. Loading testing set...')
+                test_dataset = FramesDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
 
         print('\nDone. Starting training...')
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)

@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 
 class ComputeDistConsec:
-    def __call__(self, sample: list) -> torch.tensor:
+    def __call__(self, sample: tuple[list, list]) -> torch.tensor:
         sample = torch.tensor(np.array(sample))
         differences = torch.zeros([sample.shape[0] - 1, sample.shape[1]])
         for frame in range(differences.shape[0]):
@@ -16,7 +16,7 @@ class ComputeDistConsec:
 
 
 class ComputeDistFirst:
-    def __call__(self, sample: list) -> torch.tensor:
+    def __call__(self, sample: tuple[list, list]) -> torch.tensor:
         sample = torch.tensor(np.array(sample))
         differences = torch.zeros([sample.shape[0] - 1, sample.shape[1]])
         for frame in range(differences.shape[0]):
@@ -25,7 +25,7 @@ class ComputeDistFirst:
 
 
 class ComputeDistSource:
-    def __call__(self, sample: list) -> torch.tensor:
+    def __call__(self, sample: tuple[list, list]) -> torch.tensor:
         sample = torch.tensor(np.array(sample), dtype=torch.float32)
         sample = torch.reshape(sample, (sample.shape[0], 42, 3))
 
@@ -40,27 +40,58 @@ class ComputeDistSource:
         return sample
 
 
+class ComputeDistNet:
+    def __call__(self, sample: tuple[list, list]) -> tuple[torch.tensor, torch.tensor]:
+        left = sample[0]
+        left = torch.tensor(np.array(left), dtype=torch.float32)
+        if left.shape[0] != 0:
+            left = torch.reshape(left, (left.shape[0], 21, 3))
+            source = left[0][0]
+            for frame in left:
+                frame -= frame[0]
+                # frame[0] -= source
+            left = torch.reshape(left, (left.shape[0], 21 * 3))
+
+        right = sample[1]
+        right = torch.tensor(np.array(right), dtype=torch.float32)
+        if right.shape[0] != 0:
+            right = torch.reshape(right, (right.shape[0], 21, 3))
+            for frame in right:
+                source = frame[0].clone()
+                frame -= source
+                # frame[0] -= source
+            right = torch.reshape(right, (right.shape[0], 21 * 3))
+
+        return (left, right)
+
+
 class ExtractLandmarks:
     def __init__(self, holistic):
         self.holistic = holistic
 
-    def __call__(self, sample: list) -> list:
+    def __call__(self, sample: list) -> tuple[list, list]:
         # Landmarks already extracted
         if len(sample[0].shape) != 3:
             return sample
 
-        processed = []
+        left = []
+        right = []
         for frame in sample:
             results = self.holistic.process(frame)
             keypoints = np.array([])
-            for landmark_list in [results.left_hand_landmarks, results.right_hand_landmarks]:
-                if landmark_list is not None:
-                    for landmark in landmark_list.landmark:
-                        keypoints = np.append(keypoints, [landmark.x, landmark.y, landmark.z])
-                else:
-                    keypoints = np.append(keypoints, np.zeros(21 * 3))
-            processed.append(keypoints.copy())
-        return processed
+
+            if results.left_hand_landmarks is not None:
+                for landmark in results.left_hand_landmarks.landmark:
+                    keypoints = np.append(keypoints, [landmark.x, landmark.y, landmark.z])
+                left.append(keypoints.copy())
+            
+            keypoints = np.array([])
+            if results.right_hand_landmarks is not None:
+                for landmark in results.right_hand_landmarks.landmark:
+                    keypoints = np.append(keypoints, [landmark.x, landmark.y, landmark.z])
+                right.append(keypoints.copy())
+
+        return (left, right)
 
 
 class LandmarksDataset(Dataset):
@@ -97,7 +128,7 @@ class LandmarksDataset(Dataset):
         return sample, label
 
 
-class JesterDataset(Dataset):
+class FramesDataset(Dataset):
     def __init__(self, root_dir: str, annotations: str, labels_map: dict, transform=None, target_transform=None, max_samples=200):
         self.root_dir = root_dir
         self.samples = {idx: dirname for idx, dirname in enumerate(os.listdir(root_dir))}

@@ -35,5 +35,5 @@ ACTION_TO_IDX = {
     'PANI': 33,
     'SZKOLA': 34,
     'PAN': 35,
-    'MOJ_SWOJ': 36,
+    'MOJ_SWOJ': 36
 }
