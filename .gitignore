@@ -1,7 +1,6 @@
 # Datasets
 data/*/*/
 data/*/*.csv
-data/*/*.json
 
 # Byte-compiled / optimized / DLL files
 *__pycache__/
