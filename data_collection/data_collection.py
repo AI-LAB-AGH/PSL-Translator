@@ -21,12 +21,12 @@ annotations_train.csv should have 2 columns 'sample_idx' and 'class_idx' respect
 """
 
 
-def annotate_sample(sample_num: int, class_idx: int, subset: str):
+def annotate_sample(sample_num: int, action: str, subset: str):
     """
     subset is supposed to only take values {'train', 'test'}
     """
     with open(os.path.join(PATH, f'annotations_{subset}.csv'), 'a') as f:
-        f.write(f'{sample_num}, {class_idx}\n')
+        f.write(f'{sample_num},{action}\n')
 
 
 def save_image(cap, subset, sample_num, frame, path):
@@ -99,7 +99,7 @@ def main():
                 if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
                     break
 
-            annotate_sample(n_samples, ACTION_TO_IDX[action], subset)
+            annotate_sample(n_samples, action, subset)
 
             if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
                 break
