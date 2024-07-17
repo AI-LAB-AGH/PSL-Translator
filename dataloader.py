@@ -25,7 +25,7 @@ class ComputeDistFirst:
 
 
 class ComputeDistSource:
-    def __call__(self, sample: tuple[list, list]) -> torch.tensor:
+    def __call__(self, sample: tuple[list, list]) -> tuple[torch.tensor, torch.tensor]:
         sample = torch.tensor(np.array(sample), dtype=torch.float32)
         sample = torch.reshape(sample, (sample.shape[0], 42, 3))
 
@@ -40,27 +40,47 @@ class ComputeDistSource:
         return sample
 
 
-class ComputeDistNet:
+class ComputeDistNetWithMovement:
     def __call__(self, sample: tuple[list, list]) -> tuple[torch.tensor, torch.tensor]:
         left = sample[0]
         left = torch.tensor(np.array(left), dtype=torch.float32)
-        if left.shape[0] != 0:
-            left = torch.reshape(left, (left.shape[0], 21, 3))
-            source = left[0][0]
-            for frame in left:
-                frame -= frame[0]
-                # frame[0] -= source
-            left = torch.reshape(left, (left.shape[0], 21 * 3))
+        left = torch.reshape(left, (left.shape[0], 21, 3))
+        source = left[0][0]
+        for frame in left:
+            frame[1:] -= frame[0]
+            frame[0] -= source
+        left = torch.reshape(left, (left.shape[0], 21 * 3))
 
         right = sample[1]
         right = torch.tensor(np.array(right), dtype=torch.float32)
-        if right.shape[0] != 0:
-            right = torch.reshape(right, (right.shape[0], 21, 3))
-            for frame in right:
-                source = frame[0].clone()
-                frame -= source
-                # frame[0] -= source
-            right = torch.reshape(right, (right.shape[0], 21 * 3))
+        right = torch.reshape(right, (right.shape[0], 21, 3))
+        source = right[0][0]
+        for frame in left:
+            frame[1:] -= frame[0]
+            frame[0] -= source
+        right = torch.reshape(right, (right.shape[0], 21 * 3))
+
+        return (left, right)
+    
+class ComputeDistNetNoMovement:
+    def __call__(self, sample: tuple[list, list]) -> tuple[torch.tensor, torch.tensor]:
+        left = sample[0]
+        for frame in range(len(left)):
+            left[frame] = torch.tensor(np.array(left[frame]), dtype=torch.float32)
+            if left[frame].shape[0] != 0:
+                left[frame] = torch.reshape(left[frame], (21, 3))
+                source = left[frame][0].clone()
+                left[frame] -= source
+                left[frame] = left[frame].view(21 * 3)
+
+        right = sample[1]
+        for frame in range(len(right)):
+            right[frame] = torch.tensor(np.array(right[frame]), dtype=torch.float32)
+            if right[frame].shape[0] != 0:
+                right[frame] = torch.reshape(right[frame], (21, 3))
+                source = right[frame][0].clone()
+                right[frame] -= source
+                right[frame] = right[frame].view(21 * 3)
 
         return (left, right)
 
@@ -83,13 +103,17 @@ class ExtractLandmarks:
             if results.left_hand_landmarks is not None:
                 for landmark in results.left_hand_landmarks.landmark:
                     keypoints = np.append(keypoints, [landmark.x, landmark.y, landmark.z])
-                left.append(keypoints.copy())
+            else:
+                keypoints = np.append(keypoints, [])
+            left.append(keypoints.copy())
             
             keypoints = np.array([])
             if results.right_hand_landmarks is not None:
                 for landmark in results.right_hand_landmarks.landmark:
                     keypoints = np.append(keypoints, [landmark.x, landmark.y, landmark.z])
-                right.append(keypoints.copy())
+            else:
+                keypoints = np.append(keypoints, [])
+            right.append(keypoints.copy())
 
         return (left, right)
 
