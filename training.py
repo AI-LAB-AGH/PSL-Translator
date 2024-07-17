@@ -3,6 +3,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 import torch
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
 def train(model: torch.nn.Module,
           train_loader: torch.utils.data.DataLoader,
@@ -22,40 +23,46 @@ def train(model: torch.nn.Module,
     for epoch in range(num_epochs):
         model.train()
         running_loss = 0.0
-        for i, data in enumerate(train_loader):
-            # print(f'\rTraining. Batch {i} of {len(train_loader)} started', end='')
+        for data in train_loader:
+            # Input dims: N x L x IN
             (lefts, rights), labels = data
 
             optimizer.zero_grad()
-            outputs = model(lefts, rights)
+            outputs = None
+            model.initialize_cell_and_hidden_state()
+            for frame in range(len(lefts)):
+                left = lefts[frame].unsqueeze(1)
+                right = rights[frame].unsqueeze(1)
+                outputs = model(left, right)
             loss = criterion(outputs, labels)
 
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-        print('Training finished')
 
         model.eval()
         all_preds = []
         all_labels = []
         with torch.no_grad():
-            for i, data in enumerate(test_loader):
-                # print(f'\rValidation. Batch {i} of {len(test_loader)} started', end='')
+            for data in test_loader:
                 (lefts, rights), labels = data
 
-                outputs = model(lefts, rights)
+                outputs = None
+                for frame in range(len(lefts)):
+                    left = lefts[frame].unsqueeze(1)
+                    right = rights[frame].unsqueeze(1)
+                    outputs = model(left, right)
 
                 _, preds = torch.max(outputs, 1)
                 all_preds.extend(preds.cpu().numpy())
                 all_labels.extend(labels.cpu().numpy())
-        print('Validation finished')
         
         accuracy = accuracy_score(all_labels, all_preds)
         history['epoch'].append(epoch + 1)
         history['loss'].append(running_loss / len(train_loader))
         history['accuracy'].append(accuracy)
 
-        print(f'Epoch {epoch+1}/{num_epochs}, Loss: {running_loss/len(train_loader)}, Accuracy: {accuracy}')
+        print(f'\r\r\rEpoch {epoch+1}/{num_epochs}, Loss: {running_loss/len(train_loader)}, Accuracy: {accuracy}')
 
     with open('training_history.json', 'w') as f:
         json.dump(history, f)
@@ -67,8 +74,15 @@ def train(model: torch.nn.Module,
     all_preds = []
     all_labels = []
     with torch.no_grad():
-        for (lefts, rights), labels in test_loader:
-            outputs = model(lefts, rights)
+        for data in test_loader:
+            (lefts, rights), labels = data
+            
+            outputs = None
+            model.initialize_cell_and_hidden_state()
+            for frame in range(len(lefts)):
+                left = lefts[frame].unsqueeze(1)
+                right = rights[frame].unsqueeze(1)
+                outputs = model(left, right)
             
             _, preds = torch.max(outputs, 1)
             all_preds.extend(preds.cpu().numpy())
@@ -77,6 +91,7 @@ def train(model: torch.nn.Module,
     accuracy = accuracy_score(all_labels, all_preds)
     cm = confusion_matrix(all_labels, all_preds)
     return {'history': history, 'accuracy': accuracy, 'cm': cm}
+
 
 def display_results(results: dict, actions):
     history = results['history']
