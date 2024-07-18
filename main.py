@@ -62,8 +62,8 @@ def run_real_time_inference(model, actions, holistic, transform):
             print('\r'+ ' ' * 100, end='')
             print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
 
-        # Draw detected landmarks
-        img = draw_landmarks(img, holistic)
+        # Draw detected landmarks and show image
+        # img = draw_landmarks(img, holistic)
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         cv2.imshow('Camera', img)
         cv2.waitKey(1)
