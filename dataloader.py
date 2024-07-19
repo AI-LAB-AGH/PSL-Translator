@@ -89,9 +89,9 @@ class ExtractLandmarks:
     def __init__(self, holistic):
         self.holistic = holistic
 
-    def __call__(self, sample: list) -> tuple[list, list]:
+    def __call__(self, sample) -> tuple[list, list]:
         # Landmarks already extracted
-        if len(sample[0].shape) != 3:
+        if len(sample) == 2:
             return sample
 
         left = []
@@ -152,7 +152,7 @@ class LandmarksDataset(Dataset):
         return sample, label
 
 
-class FramesDataset(Dataset):
+class JesterDataset(Dataset):
     def __init__(self, root_dir: str, annotations: str, labels_map: dict, transform=None, target_transform=None, max_samples=200):
         self.root_dir = root_dir
         self.samples = {idx: dirname for idx, dirname in enumerate(os.listdir(root_dir))}
@@ -183,6 +183,26 @@ class FramesDataset(Dataset):
             sample = self.transform(sample)
         else:
             sample = torch.tensor(np.array(sample), dtype=torch.float32)
+        if self.target_transform:
+            label = self.target_transform(label)
+
+        return sample, label
+
+class RGBDataset(Dataset):
+    def __init__(self, root_dir: str, transform=None, target_transform=None, max_samples=200):
+        self.filepath = os.path.join(root_dir, 'data.pth')
+        self.data = torch.load(self.filepath)
+        self.transform = transform
+        self.target_transform = target_transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        (label, left, right) = self.data[idx]
+
+        if self.transform:
+            sample = self.transform((left, right))
         if self.target_transform:
             label = self.target_transform(label)
 

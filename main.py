@@ -11,7 +11,7 @@ from model_transformer import TransformerModel
 from model_LSTM import LSTMModel
 from training import train, display_results
 from dataloader import ComputeDistSource, ComputeDistFirst, ComputeDistConsec, ComputeDistNetNoMovement, ComputeDistNetWithMovement
-from dataloader import ExtractLandmarks, LandmarksDataset, FramesDataset
+from dataloader import ExtractLandmarks, LandmarksDataset, JesterDataset, RGBDataset
 
 
 def draw_landmarks(img, holistic):
@@ -154,7 +154,7 @@ def run_set_size_inference(model, actions, holistic, transform):
 
 
 model_type = 'lstm'
-dataset = 'RGB'
+dataset = 'landmarks2'
 root_dir_train = 'data/'+dataset+'/train'
 root_dir_test = 'data/'+dataset+'/test'
 annotations_train = 'data/'+dataset+'/annotations_train.csv'
@@ -175,7 +175,7 @@ def main():
     optimizer = torch.optim.Adam
     transform = transforms.Compose([ExtractLandmarks(holistic),
                                     ComputeDistNetNoMovement()])
-    from_checkpoint = True
+    from_checkpoint = False
     
     input_shape = (29, 21*3)
     hidden_size = 20
@@ -200,14 +200,14 @@ def main():
                 test_dataset = LandmarksDataset(root_dir_test, annotations_test, label_map, transform)
                 
             case 'jester':
-                train_dataset = FramesDataset(root_dir_train, annotations_train, label_map, transform, None, 50)
+                train_dataset = JesterDataset(root_dir_train, annotations_train, label_map, transform, None, 50)
                 print('\nDone. Loading testing set...')
-                test_dataset = FramesDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
+                test_dataset = JesterDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
 
-            case 'RGB':
-                train_dataset = FramesDataset(root_dir_train, annotations_train, label_map, transform, None, -1)
+            case 'landmarks2':
+                train_dataset = RGBDataset(root_dir_train, transform, None, -1)
                 print('\nDone. Loading testing set...')
-                test_dataset = FramesDataset(root_dir_test, annotations_test, label_map, transform, None, -1)
+                test_dataset = RGBDataset(root_dir_test, transform, None, -1)
 
         print('\nDone. Starting training...')
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
