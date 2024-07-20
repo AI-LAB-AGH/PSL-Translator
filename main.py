@@ -11,7 +11,7 @@ from model_transformer import TransformerModel
 from model_LSTM import LSTMModel
 from training import train, display_results
 from dataloader import ComputeDistSource, ComputeDistFirst, ComputeDistConsec, ComputeDistNetNoMovement, ComputeDistNetWithMovement
-from dataloader import ExtractLandmarks, LandmarksDataset, JesterDataset, RGBDataset
+from dataloader import ExtractLandmarks, LandmarksDataset, JesterDataset, ProcessedDataset
 
 
 def draw_landmarks(img, holistic):
@@ -154,7 +154,7 @@ def run_set_size_inference(model, actions, holistic, transform):
 
 
 model_type = 'lstm'
-dataset = 'landmarks2'
+dataset = 'landmarks_P'
 root_dir_train = 'data/'+dataset+'/train'
 root_dir_test = 'data/'+dataset+'/test'
 annotations_train = 'data/'+dataset+'/annotations_train.csv'
@@ -168,7 +168,7 @@ model_path = 'models/'+model_type+'_model.pth'
 
 def main():
     holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
-    num_epochs = 30
+    num_epochs = 10
     batch_size = 1
     lr = 0.001
     criterion = torch.nn.CrossEntropyLoss
@@ -196,20 +196,25 @@ def main():
         match dataset:
             case 'landmarks':
                 train_dataset = LandmarksDataset(root_dir_train, annotations_train, label_map, transform)
-                print('\nDone. Loading testing set...')
+                print('Done. Loading testing set...')
                 test_dataset = LandmarksDataset(root_dir_test, annotations_test, label_map, transform)
                 
             case 'jester':
                 train_dataset = JesterDataset(root_dir_train, annotations_train, label_map, transform, None, 50)
-                print('\nDone. Loading testing set...')
+                print('Done. Loading testing set...')
                 test_dataset = JesterDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
 
-            case 'landmarks2':
-                train_dataset = RGBDataset(root_dir_train, transform, None, -1)
-                print('\nDone. Loading testing set...')
-                test_dataset = RGBDataset(root_dir_test, transform, None, -1)
+            case 'RGB_P':
+                train_dataset = ProcessedDataset(root_dir_train, transform, None, -1)
+                print('Done. Loading testing set...')
+                test_dataset = ProcessedDataset(root_dir_test, transform, None, -1)
 
-        print('\nDone. Starting training...')
+            case 'landmarks_P':
+                train_dataset = ProcessedDataset(root_dir_train, transform, None, -1)
+                print('Done. Loading testing set...')
+                test_dataset = ProcessedDataset(root_dir_test, transform, None, -1)
+
+        print('Done. Starting training...')
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 

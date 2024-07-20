@@ -188,7 +188,7 @@ class JesterDataset(Dataset):
 
         return sample, label
 
-class RGBDataset(Dataset):
+class ProcessedDataset(Dataset):
     def __init__(self, root_dir: str, transform=None, target_transform=None, max_samples=200):
         self.filepath = os.path.join(root_dir, 'data.pth')
         self.data = torch.load(self.filepath)

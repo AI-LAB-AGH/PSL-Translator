@@ -1,9 +1,8 @@
 import json
-from sklearn.metrics import accuracy_score, confusion_matrix
 import torch
-import matplotlib.pyplot as plt
 import seaborn as sns
-import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, confusion_matrix
 
 def train(model: torch.nn.Module,
           train_loader: torch.utils.data.DataLoader,
@@ -23,10 +22,11 @@ def train(model: torch.nn.Module,
     for epoch in range(num_epochs):
         model.train()
         running_loss = 0.0
-        for data in train_loader:
+        for i, data in enumerate(train_loader):
             # Input dims: N x L x IN
             (lefts, rights), labels = data
 
+            cl, cr = 0, 0
             optimizer.zero_grad()
             outputs = None
             model.initialize_cell_and_hidden_state()
@@ -39,6 +39,7 @@ def train(model: torch.nn.Module,
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
+            print(f'\rEpoch {epoch+1}/{num_epochs}, Batch {i+1}/{len(train_loader)} complete', end='')
 
         model.eval()
         all_preds = []
@@ -62,7 +63,7 @@ def train(model: torch.nn.Module,
         history['loss'].append(running_loss / len(train_loader))
         history['accuracy'].append(accuracy)
 
-        print(f'\r\r\rEpoch {epoch+1}/{num_epochs}, Loss: {running_loss/len(train_loader)}, Accuracy: {accuracy}')
+        print(f'\rEpoch {epoch+1}/{num_epochs}, Loss: {running_loss/len(train_loader)}, Accuracy: {accuracy}')
 
     with open('training_history.json', 'w') as f:
         json.dump(history, f)
