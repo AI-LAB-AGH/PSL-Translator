@@ -1,7 +1,9 @@
 # Datasets
 data/*/*/
 data/*/*.csv
-!data/landmarks2/*
+!data/landmarks_P/*
+!data/RGB_P/*
+!data/jester_P/*
 
 # Byte-compiled / optimized / DLL files
 *__pycache__/
