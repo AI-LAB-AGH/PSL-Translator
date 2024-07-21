@@ -1,4 +1,3 @@
-import os
 import cv2
 import json
 import torch
@@ -11,13 +10,12 @@ from torchvision import transforms
 from model_transformer import TransformerModel
 from model_LSTM import LSTMModel
 from training import train, display_results
-from dataloader import ComputeDistSource, ComputeDistFirst, ComputeDistNet, ExtractLandmarks, LandmarksDataset, FramesDataset
+from dataloader import ComputeDistSource, ComputeDistFirst, ComputeDistConsec, ComputeDistNetNoMovement, ComputeDistNetWithMovement
+from dataloader import ExtractLandmarks, LandmarksDataset, JesterDataset, ProcessedDataset
 
 
 def draw_landmarks(img, holistic):
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     results = holistic.process(img)
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     
     mp.solutions.drawing_utils.draw_landmarks(img, results.left_hand_landmarks, mp.solutions.holistic.HAND_CONNECTIONS)
     mp.solutions.drawing_utils.draw_landmarks(img, results.right_hand_landmarks, mp.solutions.holistic.HAND_CONNECTIONS)
@@ -26,6 +24,57 @@ def draw_landmarks(img, holistic):
 
 
 def run_real_time_inference(model, actions, holistic, transform):
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Cannot access camera.")
+        exit()
+
+    model.initialize_cell_and_hidden_state()
+    action_text = ""
+
+    while True:
+        # Grab frame
+        success, img = cap.read()
+        if not success:
+            print("Failed to capture image.")
+            return False
+        cv2.putText(img, action_text, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.imshow('Camera', img)
+        
+        # Process frame to obtain model input
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        left, right = transform([img])
+        left = left = left[0].view(1, 1, -1)
+        right = right[0].view(1, 1, -1)
+
+        # Pass input through network
+        output = model(left, right)
+        output[0] = torch.nn.functional.softmax(output[0])
+        confidence, predicted_index = torch.max(output, dim=1)
+        predicted_action = actions[predicted_index.item()]
+
+        # Output the recognized action
+        if confidence > 0.4:
+            action_text = f'{predicted_action}'
+            print('\r'+ ' ' * 100, end='')
+            print(f'\rRecognized action: {predicted_action} with confidence: {confidence.item():.2f}', end='')
+        else:
+            print('\r'+ ' ' * 100, end='')
+            print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
+
+        # Draw detected landmarks and show image
+        # img = draw_landmarks(img, holistic)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        cv2.imshow('Camera', img)
+        cv2.waitKey(1)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+def run_set_size_inference(model, actions, holistic, transform):
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("Cannot access camera.")
@@ -75,19 +124,22 @@ def run_real_time_inference(model, actions, holistic, transform):
                 cap.release()
                 cv2.destroyAllWindows()
                 return   
+                
+        output = None
+        model.initialize_cell_and_hidden_state()
+        
+        lefts, rights = transform(frames)
+        for frame in range(len(lefts)):
+            left = lefts[frame].view(1, 1, -1)
+            right = rights[frame].view(1, 1, -1)
+            output = model(left, right)
 
-        left, right = transform(frames)
-        print(left.shape, right.shape)
-        left = left.unsqueeze(0)
-        right = right.unsqueeze(0)
-
-        output = model(left, right)
         output[0] = torch.nn.functional.softmax(output[0])
         confidence, predicted_index = torch.max(output, dim=1)
         predicted_action = actions[predicted_index.item()]
         frames = []
 
-        if confidence > 0.2:
+        if confidence > 0.4:
             action_text = f"{predicted_action}"
             print(f"Recognized action: {predicted_action} with confidence: {confidence.item():.2f}")
         else:
@@ -100,8 +152,9 @@ def run_real_time_inference(model, actions, holistic, transform):
     cap.release()
     cv2.destroyAllWindows()
 
+
 model_type = 'lstm'
-dataset = 'RGB'
+dataset = 'landmarks_P'
 root_dir_train = 'data/'+dataset+'/train'
 root_dir_test = 'data/'+dataset+'/test'
 annotations_train = 'data/'+dataset+'/annotations_train.csv'
@@ -115,14 +168,19 @@ model_path = 'models/'+model_type+'_model.pth'
 
 def main():
     holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
-    num_epochs = 30
+    num_epochs = 10
     batch_size = 1
     lr = 0.001
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
     transform = transforms.Compose([ExtractLandmarks(holistic),
+<<<<<<< HEAD
                                     ComputeDistNet()])
     from_checkpoint = True
+=======
+                                    ComputeDistNetNoMovement()])
+    from_checkpoint = False
+>>>>>>> 863edb2d40ad4bfce3f4c72a0f5293dbd6c9318e
     
     input_shape = (29, 21*3)
     hidden_size = 20
@@ -143,20 +201,25 @@ def main():
         match dataset:
             case 'landmarks':
                 train_dataset = LandmarksDataset(root_dir_train, annotations_train, label_map, transform)
-                print('\nDone. Loading testing set...')
+                print('Done. Loading testing set...')
                 test_dataset = LandmarksDataset(root_dir_test, annotations_test, label_map, transform)
                 
             case 'jester':
-                train_dataset = FramesDataset(root_dir_train, annotations_train, label_map, transform, None, 50)
-                print('\nDone. Loading testing set...')
-                test_dataset = FramesDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
+                train_dataset = JesterDataset(root_dir_train, annotations_train, label_map, transform, None, 50)
+                print('Done. Loading testing set...')
+                test_dataset = JesterDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
 
-            case 'RGB':
-                train_dataset = FramesDataset(root_dir_train, annotations_train, label_map, transform, None, 50)
-                print('\nDone. Loading testing set...')
-                test_dataset = FramesDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
+            case 'RGB_P':
+                train_dataset = ProcessedDataset(root_dir_train, transform, None, -1)
+                print('Done. Loading testing set...')
+                test_dataset = ProcessedDataset(root_dir_test, transform, None, -1)
 
-        print('\nDone. Starting training...')
+            case 'landmarks_P':
+                train_dataset = ProcessedDataset(root_dir_train, transform, None, -1)
+                print('Done. Loading testing set...')
+                test_dataset = ProcessedDataset(root_dir_test, transform, None, -1)
+
+        print('Done. Starting training...')
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
