@@ -42,7 +42,7 @@ def save_image(cap, subset, sample_num, frame, path):
 def main():
     actions = np.array(list(ACTION_TO_IDX.keys()))
     sequences = 100  # max number of samples to record
-    frames = 30  # frames per sample
+    frames = 100  # max number of frames per sample
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -93,6 +93,7 @@ def main():
                 save_image(cap, subset, n_samples, frame, PATH)
                 image = draw_landmarks(cap, holistic)
                 cv2.putText(image, f"Collecting frames. Action: {action} frame no: {frame}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+                cv2.putText(image, f"Press ESC to stop recording", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
                 cv2.imshow('Camera', image)
 
                 # cv2.waitKey essentially serves as a sleep function here, it causes a slight delay
