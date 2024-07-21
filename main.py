@@ -122,7 +122,7 @@ def main():
     optimizer = torch.optim.Adam
     transform = transforms.Compose([ExtractLandmarks(holistic),
                                     ComputeDistNet()])
-    from_checkpoint = False
+    from_checkpoint = True
     
     input_shape = (29, 21*3)
     hidden_size = 20
