@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -24,23 +25,17 @@ class TransformerBlock(nn.Module):
         return self.layernorm2(out1 + ffn_output)
     
 class TransformerModel(nn.Module):
-    def __init__(self, input_dim, num_classes):
+    def __init__(self, input_dim, num_classes, embed_dim=128, num_heads=4, ff_dim=128, dropout=0.1):
         super(TransformerModel, self).__init__()
-        self.dense1 = nn.Linear(input_dim, 128)
-        self.encoder_block1 = TransformerBlock(embed_dim=128, num_heads=4, ff_dim=128)
-        self.encoder_block2 = TransformerBlock(embed_dim=128, num_heads=4, ff_dim=128)
+        self.input_projection = nn.Linear(input_dim, embed_dim)
+        self.transformer_block1 = TransformerBlock(embed_dim, num_heads, ff_dim, dropout)
         self.global_avg_pool = nn.AdaptiveAvgPool1d(1)
-        self.dense2 = nn.Linear(128, 64)
-        self.dropout = nn.Dropout(0.1)
-        self.out = nn.Linear(64, num_classes)
+        self.output_layer = nn.Linear(embed_dim, num_classes)
 
     def forward(self, x):
-        x = self.dense1(x)
+        x = self.input_projection(x)
         x = x.permute(1, 0, 2)  # For multihead attention
-        x = self.encoder_block1(x)
-        x = self.encoder_block2(x)
+        x = self.transformer_block1(x)
         x = x.permute(1, 2, 0)  # For pooling
         x = self.global_avg_pool(x).squeeze(-1)
-        x = F.relu(self.dense2(x))
-        x = self.dropout(x)
-        return F.softmax(self.out(x), dim=1)
+        return self.output_layer(x)
