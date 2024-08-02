@@ -5,62 +5,38 @@ import numpy as np
 from skimage import io
 from torch.utils.data import Dataset
 
-
-class ComputeDistConsec:
-    def __call__(self, sample: tuple[list, list]) -> torch.tensor:
-        sample = torch.tensor(np.array(sample))
-        differences = torch.zeros([sample.shape[0] - 1, sample.shape[1]])
-        for frame in range(differences.shape[0]):
-            differences[frame] = sample[frame] - sample[frame + 1]
-        return differences
-
-
-class ComputeDistFirst:
-    def __call__(self, sample: tuple[list, list]) -> torch.tensor:
-        sample = torch.tensor(np.array(sample))
-        differences = torch.zeros([sample.shape[0] - 1, sample.shape[1]])
-        for frame in range(differences.shape[0]):
-            differences[frame] = sample[frame + 1] - sample[0]
-        return differences
-
-
-class ComputeDistSource:
-    def __call__(self, sample: tuple[list, list]) -> tuple[torch.tensor, torch.tensor]:
-        sample = torch.tensor(np.array(sample), dtype=torch.float32)
-        sample = torch.reshape(sample, (sample.shape[0], 42, 3))
-
-        source = torch.tensor(np.array(
-            [list(sample[0][0]) for landmark in range(21)] + [list(sample[0][21]) for landmark in
-                                                              range(21)]))
-
-        for frame in range(sample.shape[0]):
-            sample[frame] -= source
-
-        sample = torch.reshape(sample, (sample.shape[0], 42 * 3))
-        return sample
-
-
 class ComputeDistNetWithMovement:
     def __call__(self, sample: tuple[list, list]) -> tuple[torch.tensor, torch.tensor]:
         left = sample[0]
-        left = torch.tensor(np.array(left), dtype=torch.float32)
-        left = torch.reshape(left, (left.shape[0], 21, 3))
-        source = left[0][0]
-        for frame in left:
-            frame[1:] -= frame[0]
-            frame[0] -= source
-        left = torch.reshape(left, (left.shape[0], 21 * 3))
+        source = None
+        for frame in range(len(left)):
+            left[frame] = torch.tensor(np.array(left[frame]), dtype=torch.float32)
+            if left[frame].shape[0] != 0:
+                left[frame] = torch.reshape(left[frame], (21, 3))
+                left[frame][1:] -= left[frame][0] # Landmark net
+                if source is None:
+                    source = left[frame][0].clone()
+                left[frame][0] -= source # Displacement relative to previous frame
+                left[frame][0] /= source # Scale to be a percentage
+                source += left[frame][0]
+                left[frame] = left[frame].view(21 * 3)
 
         right = sample[1]
-        right = torch.tensor(np.array(right), dtype=torch.float32)
-        right = torch.reshape(right, (right.shape[0], 21, 3))
-        source = right[0][0]
-        for frame in left:
-            frame[1:] -= frame[0]
-            frame[0] -= source
-        right = torch.reshape(right, (right.shape[0], 21 * 3))
+        source = None
+        for frame in range(len(right)):
+            right[frame] = torch.tensor(np.array(right[frame]), dtype=torch.float32)
+            if right[frame].shape[0] != 0:
+                right[frame] = torch.reshape(right[frame], (21, 3))
+                right[frame][1:] -= right[frame][0]
+                if source is None:
+                    source = right[frame][0].clone()
+                right[frame][0] -= source
+                right[frame][0] /= source
+                source += right[frame][0]
+                right[frame] = right[frame].view(21 * 3)
 
         return (left, right)
+    
     
 class ComputeDistNetNoMovement:
     def __call__(self, sample: tuple[list, list]) -> tuple[torch.tensor, torch.tensor]:
@@ -91,7 +67,7 @@ class ExtractLandmarks:
 
     def __call__(self, sample) -> tuple[list, list]:
         # Landmarks already extracted
-        if len(sample) == 2:
+        if type(sample) == tuple:
             return sample
 
         left = []
@@ -189,21 +165,20 @@ class JesterDataset(Dataset):
         return sample, label
 
 class ProcessedDataset(Dataset):
-    def __init__(self, root_dir: str, transform=None, target_transform=None, max_samples=200):
+    def __init__(self, root_dir: str, transform=None, target_transform=None):
         self.filepath = os.path.join(root_dir, 'data.pth')
         self.data = torch.load(self.filepath)
-        self.transform = transform
-        self.target_transform = target_transform
+        for (label, left, right) in self.data:
+            if target_transform:
+                label = target_transform(label)
+            if transform:
+                (left, right) = transform((left, right))
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
         (label, left, right) = self.data[idx]
-
-        if self.transform:
-            sample = self.transform((left, right))
-        if self.target_transform:
-            label = self.target_transform(label)
+        sample = (left, right)
 
         return sample, label
