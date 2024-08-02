@@ -174,13 +174,8 @@ def main():
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
     transform = transforms.Compose([ExtractLandmarks(holistic),
-<<<<<<< HEAD
-                                    ComputeDistNet()])
-    from_checkpoint = True
-=======
-                                    ComputeDistNetNoMovement()])
+                                    ComputeDistNetWithMovement()])
     from_checkpoint = False
->>>>>>> 863edb2d40ad4bfce3f4c72a0f5293dbd6c9318e
     
     input_shape = (29, 21*3)
     hidden_size = 20
