@@ -9,9 +9,10 @@ from torchvision import transforms
 
 from model_transformer import TransformerModel
 from model_LSTM import LSTMModel
+from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
 from training import train, display_results
-from dataloader import ComputeDistSource, ComputeDistFirst, ComputeDistConsec, ComputeDistNetNoMovement, ComputeDistNetWithMovement
-from dataloader import ExtractLandmarks, LandmarksDataset, JesterDataset, ProcessedDataset
+from preprocessing.transforms import ComputeDistNetNoMovement, ComputeDistNetWithMovement, ExtractLandmarksWithMP, ExtractLandmarksWithRTMP
+from preprocessing.datasets import LandmarksDataset, JesterDataset, ProcessedDataset
 
 
 def draw_landmarks(img, holistic):
@@ -23,12 +24,13 @@ def draw_landmarks(img, holistic):
     return img
 
 
-def run_real_time_inference(model, actions, holistic, transform):
+def run_real_time_inference(model, actions, transform):
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("Cannot access camera.")
         exit()
 
+    extractor = ExtractLandmarksWithRTMP(RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx'))
     model.initialize_cell_and_hidden_state()
     action_text = ""
 
@@ -43,8 +45,15 @@ def run_real_time_inference(model, actions, holistic, transform):
         
         # Process frame to obtain model input
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        ## MediaPipe
         left, right = transform([img])
-        left = left = left[0].view(1, 1, -1)
+
+        ## RTMPose
+        # hands = extractor(img)
+        # (left, right) = transform(hands)
+
+        left = left[0].view(1, 1, -1)
         right = right[0].view(1, 1, -1)
 
         # Pass input through network
@@ -62,8 +71,7 @@ def run_real_time_inference(model, actions, holistic, transform):
             print('\r'+ ' ' * 100, end='')
             print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
 
-        # Draw detected landmarks and show image
-        # img = draw_landmarks(img, holistic)
+        # Show image
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         cv2.imshow('Camera', img)
         cv2.waitKey(1)
@@ -154,7 +162,7 @@ def run_set_size_inference(model, actions, holistic, transform):
 
 
 model_type = 'lstm'
-dataset = 'landmarks_P'
+dataset = 'RGB_P'
 root_dir_train = 'data/'+dataset+'/train'
 root_dir_test = 'data/'+dataset+'/test'
 annotations_train = 'data/'+dataset+'/annotations_train.csv'
@@ -168,16 +176,15 @@ model_path = 'models/'+model_type+'_model.pth'
 
 def main():
     holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
-    num_epochs = 10
+    num_epochs = 50
     batch_size = 1
     lr = 0.001
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
-    transform = transforms.Compose([ExtractLandmarks(holistic),
-                                    ComputeDistNetWithMovement()])
+    transform = transforms.Compose([ExtractLandmarksWithMP(holistic), ComputeDistNetNoMovement()])
     from_checkpoint = False
     
-    input_shape = (29, 21*3)
+    input_shape = (29, 21*2)
     hidden_size = 20
     num_layers = 1
     num_classes = len(label_map)
@@ -205,14 +212,14 @@ def main():
                 test_dataset = JesterDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
 
             case 'RGB_P':
-                train_dataset = ProcessedDataset(root_dir_train, transform, None, -1)
+                train_dataset = ProcessedDataset(root_dir_train, transform, None)
                 print('Done. Loading testing set...')
-                test_dataset = ProcessedDataset(root_dir_test, transform, None, -1)
+                test_dataset = ProcessedDataset(root_dir_test, transform, None)
 
             case 'landmarks_P':
-                train_dataset = ProcessedDataset(root_dir_train, transform, None, -1)
+                train_dataset = ProcessedDataset(root_dir_train, transform, None)
                 print('Done. Loading testing set...')
-                test_dataset = ProcessedDataset(root_dir_test, transform, None, -1)
+                test_dataset = ProcessedDataset(root_dir_test, transform, None)
 
         print('Done. Starting training...')
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -221,7 +228,7 @@ def main():
         results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         display_results(results, actions)
         
-    run_real_time_inference(model, actions, holistic, transform)
+    run_real_time_inference(model, actions, transform)
 
 if __name__ == "__main__":
     main()
