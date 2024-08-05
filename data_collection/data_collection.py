@@ -1,5 +1,6 @@
 import numpy as np
-import keyboard
+# import keyboard
+from pynput import keyboard
 
 from helpers import *
 from actions import ACTION_TO_IDX
@@ -19,6 +20,29 @@ For this to work you need to create the following directory structure (data is i
 
 annotations_train.csv should have 2 columns 'sample_idx' and 'class_idx' respectively
 """
+
+space_pressed = False
+right_arrow_pressed = False
+left_arrow_pressed = False
+
+def on_press(key):
+    global space_pressed, right_arrow_pressed, left_arrow_pressed
+
+    if key == keyboard.Key.space:
+        space_pressed = True
+    elif key == keyboard.Key.right:
+        right_arrow_pressed = True
+    elif key == keyboard.Key.left:
+        left_arrow_pressed = True
+
+def on_release(key):
+    global space_pressed, right_arrow_pressed, left_arrow_pressed
+    if key == keyboard.Key.space:
+        space_pressed = False
+    if key == keyboard.Key.right:
+        right_arrow_pressed = False
+    elif key == keyboard.Key.left:
+        left_arrow_pressed = False
 
 
 def annotate_sample(sample_num: int, action: str, subset: str):
@@ -44,6 +68,8 @@ def main():
     sequences = 100  # max number of samples to record
     frames = 100  # max number of frames per sample
 
+    #controller = keyboard.Controller()
+
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("Cannot access camera.")
@@ -54,8 +80,14 @@ def main():
     with mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75) as holistic:
         action_idx = 0
         action = actions[action_idx]
+
+        # Start the keyboard listener
+        listener = keyboard.Listener(on_press=on_press, on_release=on_release)
+        listener.start()
+
         for sequence in range(sequences):
-            while not keyboard.is_pressed(' '):
+            print(f'space {space_pressed}, right {right_arrow_pressed}, left {left_arrow_pressed}')
+            while not space_pressed:
                 image = draw_landmarks(cap, holistic)
                 add_window_text(image, action)
                 cv2.imshow('Camera', image)
@@ -63,14 +95,14 @@ def main():
                     cap.release()
                     cv2.destroyAllWindows()
                     return
-                if keyboard.is_pressed('right'):
+                if right_arrow_pressed:
                     if action_idx < len(actions) - 1:
                         action_idx += 1
                     else:
                         action_idx = 0
                     action = actions[action_idx]
                     cv2.waitKey(100)
-                if keyboard.is_pressed('left'):
+                if left_arrow_pressed:
                     if action_idx > 0:
                         action_idx -= 1
                     else:
@@ -83,6 +115,7 @@ def main():
             else:
                 create_directory(f'train/{n_samples}')
                 subset = 'train'
+
             print(f"Collection of data for: {action} sequence no: {sequence}.")
 
             # Give the user 3 seconds to get their hand of the space bar and prepare to show the gesture
@@ -106,9 +139,11 @@ def main():
                 break
 
             n_samples += 1
+            #listener.stop()
 
     cap.release()
     cv2.destroyAllWindows()
+    listener.stop()
 
 
 if __name__ == "__main__":
