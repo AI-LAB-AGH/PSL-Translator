@@ -53,4 +53,4 @@ while True:
         break
 
 cap.release()
-cv.closeAllWindows()
+cv.destroyAllWindows()
