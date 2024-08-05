@@ -40,10 +40,10 @@ class ConvModule(nn.Module):
 
 
 class ConvLSTM(nn.Module):
-    def __init__(self):
+    def __init__(self, hidden_size, num_layers, num_classes):
         super(ConvLSTM, self).__init__()
         self.conv = ConvModule()
-        self.LSTM = LSTMModel(input_size=1000)
+        self.LSTM = LSTMModel(input_size=1000, hidden_size=hidden_size, num_layers=num_layers, num_classes=num_classes)
     
     def forward(self, x):
         x = ConvModule(x)
