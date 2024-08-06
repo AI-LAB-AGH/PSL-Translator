@@ -1,7 +1,8 @@
 import cv2
 import json
 import torch
-import keyboard
+# import keyboard
+from pynput import keyboard
 import numpy as np
 import mediapipe as mp
 from torch.utils.data import DataLoader
@@ -77,6 +78,21 @@ def run_real_time_inference(model, actions, transform):
     cv2.destroyAllWindows()
 
 
+def on_press(key):
+    global space_pressed
+    try:
+        if key.char == ' ':
+            space_pressed = True
+            print("Space key was pressed!")
+    except AttributeError:
+        # This exception is raised when a special key (e.g., ctrl, alt, etc.) is pressed
+        pass
+
+def on_release(key):
+    if key == keyboard.Key.esc:
+        # Stop listener
+        return False
+
 def run_set_size_inference(model, actions, holistic, transform):
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -89,6 +105,11 @@ def run_set_size_inference(model, actions, holistic, transform):
         cv2.putText(img, action_text, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
         cv2.imshow('Camera', img)
         
+        # pynput setup for key listening
+        space_pressed = False
+        listener = keyboard.Listener(on_press=on_press, on_release=on_release)
+        listener.start()
+
         while not keyboard.is_pressed('space'):
             success, img = cap.read()
             if not success:
@@ -105,7 +126,9 @@ def run_set_size_inference(model, actions, holistic, transform):
                 cap.release()
                 cv2.destroyAllWindows()
                 return
-            
+        
+        listener.stop()
+        
         frames = []
         print("Recognizing the action....") 
         while len(frames) < 30:
