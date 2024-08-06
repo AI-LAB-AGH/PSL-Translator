@@ -66,7 +66,7 @@ def rgb_to_optical_flow_dataset(root_dir, target_dir):
 
 
 def main():
-    root_dir = os.path.join('data', 'RGB')
+    root_dir = os.path.join('data', 'RGB_debug')
     tgt_dir = os.path.join('data', 'RGB_OF')
     rgb_to_optical_flow_dataset(root_dir, tgt_dir)
 
