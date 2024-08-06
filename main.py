@@ -79,21 +79,6 @@ def run_real_time_inference(model, actions, transform):
     cv2.destroyAllWindows()
 
 
-def on_press(key):
-    global space_pressed
-    try:
-        if key.char == ' ':
-            space_pressed = True
-            print("Space key was pressed!")
-    except AttributeError:
-        # This exception is raised when a special key (e.g., ctrl, alt, etc.) is pressed
-        pass
-
-def on_release(key):
-    if key == keyboard.Key.esc:
-        # Stop listener
-        return False
-
 def run_set_size_inference(model, actions, holistic, transform):
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
