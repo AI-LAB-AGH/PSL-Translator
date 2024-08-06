@@ -25,6 +25,25 @@ class LSTMModel(nn.Module):
         self.h_r = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial right hidden state
         self.c_r = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial right cell state
 
+    def split_input(self, input):
+        body = input[0][:17, :]
+        face = input[0][23:91, :]
+        left = input[0][91:112, :]
+        right = input[0][112:, :]
+
+        source = input[0][0]
+        body -= source
+        face -= source
+        left -= source
+        right -= source
+
+        body = body.view(17 * 2)
+        face = face.view(68 * 2)
+        left = left.view(21 * 2)
+        right = right.view(21 * 2)
+
+        return (left, right, face, body)
+
     def forward(self, left: torch.tensor, right: torch.tensor) -> torch.tensor:
         """
         Forwards a single frame of landmarks through the network. 
