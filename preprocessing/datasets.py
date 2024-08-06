@@ -77,21 +77,38 @@ class JesterDataset(Dataset):
         return sample, label
 
 class ProcessedDataset(Dataset):
-    def __init__(self, root_dir: str, transform=None, target_transform=None, max_samples=200):
+    def __init__(self, root_dir: str, transform=None, target_transform=None):
         self.filepath = os.path.join(root_dir, 'data.pth')
         self.data = torch.load(self.filepath)
-        self.transform = transform
-        self.target_transform = target_transform
+        for (label, left, right) in self.data:
+            if target_transform:
+                label = target_transform(label)
+            if transform:
+                (left, right) = transform((left, right))
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
         (label, left, right) = self.data[idx]
+        sample = (left, right)
 
-        if self.transform:
-            sample = self.transform((left, right))
-        if self.target_transform:
-            label = self.target_transform(label)
+        return sample, label
+
+class OFDataset(Dataset):
+    def __init__(self, root_dir: str, transform=None, target_transform=None):
+        self.filepath = os.path.join(root_dir, 'data.pth')
+        self.data = torch.load(self.filepath)
+        for (label, sample) in self.data:
+            if target_transform:
+                label = target_transform(label)
+            if transform:
+                sample = transform(sample)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        (label, sample) = self.data[idx]
 
         return sample, label

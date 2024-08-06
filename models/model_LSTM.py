@@ -4,12 +4,15 @@ import torch
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(LSTMModel, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+
         self.lstm_l = nn.LSTM(input_size, hidden_size, num_layers)
         self.lstm_r = nn.LSTM(input_size, hidden_size, num_layers)
         self.fc = nn.Linear(2*hidden_size, num_classes)
-        self.hidden_size = hidden_size
-        self.num_layers = num_layers
+
         self.h_l = self.c_l = self.h_r = self.c_r = None
+
 
     def initialize_cell_and_hidden_state(self) -> None:
         """
@@ -25,24 +28,6 @@ class LSTMModel(nn.Module):
         self.h_r = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial right hidden state
         self.c_r = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial right cell state
 
-    def split_input(self, input):
-        body = input[0][:17, :]
-        face = input[0][23:91, :]
-        left = input[0][91:112, :]
-        right = input[0][112:, :]
-
-        source = input[0][0]
-        body -= source
-        face -= source
-        left -= source
-        right -= source
-
-        body = body.view(17 * 2)
-        face = face.view(68 * 2)
-        left = left.view(21 * 2)
-        right = right.view(21 * 2)
-
-        return (left, right, face, body)
 
     def forward(self, left: torch.tensor, right: torch.tensor) -> torch.tensor:
         """
@@ -81,6 +66,34 @@ class LSTMModel(nn.Module):
 
         # Concatenate the left and right outputs
         out = torch.cat([out_l, out_r], dim=1)
+
+        # Matmul dims: (N x 2H) * (2H x OUT) = N x OUT
+        return self.fc(out)
+    
+    
+class PseudoLSTMModel(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, num_classes):
+        super(PseudoLSTMModel, self).__init__()
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers)
+        self.fc = nn.Linear(hidden_size, num_classes)
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.h = None
+        self.c = None
+
+    def initialize_cell_and_hidden_state(self) -> None:
+        self.h = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial left hidden state
+        self.c = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial left hidden state
+
+    def forward(self, x: torch.tensor) -> torch.tensor:
+        # Input dims: N x L x IN
+        x = torch.permute(x, (1, 0, 2))
+
+        # Output dims: L x N x H
+        out, (self.h, self.c) = self.lstm(x, (self.h, self.c))
+
+        # Grab the output from the last timestep 
+        out = out[-1, :, :]
 
         # Matmul dims: (N x 2H) * (2H x OUT) = N x OUT
         return self.fc(out)

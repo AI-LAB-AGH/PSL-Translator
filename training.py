@@ -26,7 +26,6 @@ def train(model: torch.nn.Module,
             # Input dims: N x L x IN
             (lefts, rights), labels = data
 
-            cl, cr = 0, 0
             optimizer.zero_grad()
             outputs = None
             model.initialize_cell_and_hidden_state()
@@ -34,6 +33,7 @@ def train(model: torch.nn.Module,
                 left = lefts[frame].unsqueeze(1)
                 right = rights[frame].unsqueeze(1)
                 outputs = model(left, right)
+
             loss = criterion(outputs, labels)
 
             loss.backward()
@@ -49,6 +49,7 @@ def train(model: torch.nn.Module,
                 (lefts, rights), labels = data
 
                 outputs = None
+                model.initialize_cell_and_hidden_state()
                 for frame in range(len(lefts)):
                     left = lefts[frame].unsqueeze(1)
                     right = rights[frame].unsqueeze(1)
