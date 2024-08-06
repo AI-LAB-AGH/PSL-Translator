@@ -7,12 +7,13 @@ import mediapipe as mp
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from model_transformer import TransformerModel
-from model_LSTM import LSTMModel
+from models.model_transformer import TransformerModel
+from models.model_LSTM import LSTMModel
+from models.model_conv_LSTM import ConvLSTM
 from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
 from training import train, display_results
-from preprocessing.transforms import ComputeDistNetNoMovement, ComputeDistNetWithMovement, ExtractLandmarksWithMP, ExtractLandmarksWithRTMP
-from preprocessing.datasets import LandmarksDataset, JesterDataset, ProcessedDataset
+from preprocessing.transforms import ComputeDistNetNoMovement, ComputeDistNetWithMovement, ExtractLandmarksWithMP, ExtractLandmarksWithRTMP, NormalizeDistances
+from preprocessing.datasets import LandmarksDataset, JesterDataset, ProcessedDataset, OFDataset
 
 
 def draw_landmarks(img, holistic):
@@ -30,7 +31,6 @@ def run_real_time_inference(model, actions, transform):
         print("Cannot access camera.")
         exit()
 
-    extractor = ExtractLandmarksWithRTMP(RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx'))
     model.initialize_cell_and_hidden_state()
     action_text = ""
 
@@ -44,14 +44,9 @@ def run_real_time_inference(model, actions, transform):
         cv2.imshow('Camera', img)
         
         # Process frame to obtain model input
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) ## MediaPipe only
 
-        ## MediaPipe
-        left, right = transform([img])
-
-        ## RTMPose
-        # hands = extractor(img)
-        # (left, right) = transform(hands)
+        (left, right) = transform([img])
 
         left = left[0].view(1, 1, -1)
         right = right[0].view(1, 1, -1)
@@ -72,7 +67,7 @@ def run_real_time_inference(model, actions, transform):
             print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
 
         # Show image
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR) ## MediaPipe only
         cv2.imshow('Camera', img)
         cv2.waitKey(1)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -171,21 +166,27 @@ labels = 'data/'+dataset+'/labels.json'
 with open(labels, 'r', encoding='utf-8') as f:
     label_map = json.load(f)
 actions = np.array(list(label_map.keys()))
-model_path = 'models/'+model_type+'_model.pth'
+model_path = 'models/pretrained/'+model_type+'_'+dataset+'.pth'
 
 
 def main():
+    # Landmark extraction methods
     holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
+    extractor = RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx')
+
+    # Training params
     num_epochs = 50
     batch_size = 1
     lr = 0.001
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
-    transform = transforms.Compose([ExtractLandmarksWithMP(holistic), ComputeDistNetNoMovement()])
-    from_checkpoint = False
+    transform = transforms.Compose([ExtractLandmarksWithMP(holistic),
+                                    ComputeDistNetWithMovement()])
+    from_checkpoint = True
     
-    input_shape = (29, 21*2)
-    hidden_size = 20
+    # Model params
+    input_shape = (29, 21 * 2)
+    hidden_size = 120
     num_layers = 1
     num_classes = len(label_map)
 
@@ -195,6 +196,9 @@ def main():
 
         case 'lstm':
             model = LSTMModel(input_shape[1], hidden_size, num_layers, num_classes)
+
+        case 'conv':
+            model = ConvLSTM(hidden_size, num_layers, num_classes)
 
     if from_checkpoint:
         model.load_state_dict(torch.load(model_path))
@@ -206,20 +210,41 @@ def main():
                 print('Done. Loading testing set...')
                 test_dataset = LandmarksDataset(root_dir_test, annotations_test, label_map, transform)
                 
+            case 'landmarks_P':
+                train_dataset = ProcessedDataset(root_dir_train, transform, None)
+                print('Done. Loading testing set...')
+                test_dataset = ProcessedDataset(root_dir_test, transform, None)
+
             case 'jester':
                 train_dataset = JesterDataset(root_dir_train, annotations_train, label_map, transform, None, 50)
                 print('Done. Loading testing set...')
                 test_dataset = JesterDataset(root_dir_test, annotations_test, label_map, transform, None, 10)
+
+            case 'jester_P':
+                train_dataset = ProcessedDataset(root_dir_train, transform, None)
+                print('Done. Loading testing set...')
+                test_dataset = ProcessedDataset(root_dir_test, transform, None)
+
+            case 'jester_RTMP':
+                train_dataset = ProcessedDataset(root_dir_train, transform, None)
+                print('Done. Loading testing set...')
+                test_dataset = ProcessedDataset(root_dir_test, transform, None)
 
             case 'RGB_P':
                 train_dataset = ProcessedDataset(root_dir_train, transform, None)
                 print('Done. Loading testing set...')
                 test_dataset = ProcessedDataset(root_dir_test, transform, None)
 
-            case 'landmarks_P':
+            case 'RGB_RTMP':
                 train_dataset = ProcessedDataset(root_dir_train, transform, None)
                 print('Done. Loading testing set...')
                 test_dataset = ProcessedDataset(root_dir_test, transform, None)
+
+            case 'RGB_OF':
+                train_dataset = OFDataset(root_dir_train)
+                print('Done. Loading testing set...')
+                test_dataset = OFDataset(root_dir_test)
+
 
         print('Done. Starting training...')
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
