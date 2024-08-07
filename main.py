@@ -179,8 +179,8 @@ def run_set_size_inference(model, actions, holistic, transform):
     cv2.destroyAllWindows()
 
 
-model_type = 'lstm'
-dataset = 'RGB_P'
+model_type = 'conv'
+dataset = 'RGB_OF'
 root_dir_train = 'data/'+dataset+'/train'
 root_dir_test = 'data/'+dataset+'/test'
 annotations_train = 'data/'+dataset+'/annotations_train.csv'
@@ -195,7 +195,7 @@ model_path = 'models/pretrained/'+model_type+'_'+dataset+'.pth'
 def main():
     # Landmark extraction methods
     holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
-    extractor = RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx')
+    #extractor = RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx')
 
     # Training params
     num_epochs = 50
@@ -205,7 +205,7 @@ def main():
     optimizer = torch.optim.Adam
     transform = transforms.Compose([ExtractLandmarksWithMP(holistic),
                                     ComputeDistNetWithMovement()])
-    from_checkpoint = True
+    from_checkpoint = False
     
     # Model params
     input_shape = (29, 21 * 2)

@@ -13,7 +13,7 @@ def extract_optical_flow(frames: list[np.ndarray]) -> list[np.ndarray]:
         img2 = frames[i]
         img1_gray = cv.cvtColor(img1, cv.COLOR_RGB2GRAY)
         img2_gray = cv.cvtColor(img2, cv.COLOR_RGB2GRAY)
-        flow.append(torch.tensor(cv.calcOpticalFlowFarneback(img1_gray, img2_gray, None, 0.5, 3, 5, 3, 5, 1.2, 0), dtype=torch.int8))
+        flow.append(torch.tensor(cv.calcOpticalFlowFarneback(img1_gray, img2_gray, None, 0.5, 3, 5, 3, 5, 1.2, 0), dtype=torch.float32))
     return flow
 
 
@@ -66,7 +66,7 @@ def rgb_to_optical_flow_dataset(root_dir, target_dir):
 
 
 def main():
-    root_dir = os.path.join('data', 'RGB')
+    root_dir = os.path.join('data', 'RGB_debug')
     tgt_dir = os.path.join('data', 'RGB_OF')
     rgb_to_optical_flow_dataset(root_dir, tgt_dir)
 
