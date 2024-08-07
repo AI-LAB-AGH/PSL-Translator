@@ -1,4 +1,4 @@
-from model_LSTM import LSTMModel
+from models.model_LSTM import LSTMModel
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
