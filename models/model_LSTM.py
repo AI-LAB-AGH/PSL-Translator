@@ -87,7 +87,7 @@ class PseudoLSTMModel(nn.Module):
 
     def forward(self, x: torch.tensor) -> torch.tensor:
         # Input dims: N x L x IN
-        x = torch.permute(x, (1, 0, 2))
+        #x = torch.permute(x, (1, 0, 2))
 
         # Output dims: L x N x H
         out, (self.h, self.c) = self.lstm(x, (self.h, self.c))

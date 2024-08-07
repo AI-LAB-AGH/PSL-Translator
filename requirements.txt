@@ -8,3 +8,4 @@ seaborn==0.13.2
 scikit-learn==1.5.1
 scikit-image==0.24.0
 pynput==1.7.7
+argparse==1.4.0
