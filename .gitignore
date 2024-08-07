@@ -175,3 +175,5 @@ data_old/
 .data
 .data/
 /data_old/
+
+test.py
