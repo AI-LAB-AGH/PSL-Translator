@@ -1,4 +1,4 @@
-from models.model_LSTM import LSTMModel
+from models.model_LSTM import LSTMModel, PseudoLSTMModel
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -43,9 +43,12 @@ class ConvLSTM(nn.Module):
     def __init__(self, hidden_size, num_layers, num_classes):
         super(ConvLSTM, self).__init__()
         self.conv = ConvModule()
-        self.LSTM = LSTMModel(input_size=1000, hidden_size=hidden_size, num_layers=num_layers, num_classes=num_classes)
+        self.LSTM = PseudoLSTMModel(input_size=2000, hidden_size=hidden_size, num_layers=num_layers, num_classes=num_classes)
     
+    def initialize_cell_and_hidden_state(self):
+        self.LSTM.initialize_cell_and_hidden_state()
+
     def forward(self, x):
-        x = ConvModule(x)
-        x = LSTMModel(x)
+        x = self.conv(x)
+        x = self.LSTM(x)
         return x
