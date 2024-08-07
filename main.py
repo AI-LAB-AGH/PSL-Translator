@@ -2,6 +2,7 @@ import cv2
 import json
 import torch
 # import keyboard
+import argparse
 from pynput import keyboard
 import numpy as np
 import mediapipe as mp
@@ -179,48 +180,70 @@ def run_set_size_inference(model, actions, holistic, transform):
     cv2.destroyAllWindows()
 
 
-model_type = 'conv'
-dataset = 'RGB_OF'
-root_dir_train = 'data/'+dataset+'/train'
-root_dir_test = 'data/'+dataset+'/test'
-annotations_train = 'data/'+dataset+'/annotations_train.csv'
-annotations_test = 'data/'+dataset+'/annotations_test.csv'
-labels = 'data/'+dataset+'/labels.json'
-with open(labels, 'r', encoding='utf-8') as f:
-    label_map = json.load(f)
-actions = np.array(list(label_map.keys()))
-model_path = 'models/pretrained/'+model_type+'_'+dataset+'.pth'
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model', type=str, default=None, help='Model to use (LSTM, ConvLSTM, Transformer)')
+    parser.add_argument('--dataset', type=str, default=None, help='Dataset (one of those in data/ directory) suitable for the chosen model')
+
+    # flags
+    parser.add_argument('--from_checkpoint', type=bool, default=False, help="Flag whether to train the model or load an already trained one")
+
+    # model hyperparameters
+    parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
+    parser.add_argument('--num_epochs', type=int, default=50, help='Number of training epochs')
+    parser.add_argument('--batch_size', type=int, default=1, help='Training batch size')
+
+    # LSTM hyperparameters
+    parser.add_argument('--num_layers', type=int, default=1, help='Number of LSTM layers')
+    parser.add_argument('--hidden_size', type=int, default=120, help='Hidden state dim in RNN model')
+
+    return parser.parse_args()
 
 
 def main():
+    args = get_args()
+
+    model_type = args.model
+    dataset = args.dataset
+    root_dir_train = 'data/'+dataset+'/train'
+    root_dir_test = 'data/'+dataset+'/test'
+    annotations_train = 'data/'+dataset+'/annotations_train.csv'
+    annotations_test = 'data/'+dataset+'/annotations_test.csv'
+    labels = 'data/'+dataset+'/labels.json'
+    with open(labels, 'r', encoding='utf-8') as f:
+        label_map = json.load(f)
+    actions = np.array(list(label_map.keys()))
+    model_path = 'models/pretrained/'+model_type+'_'+dataset+'.pth'
+
     # Landmark extraction methods
     holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
     #extractor = RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx')
 
     # Training params
-    num_epochs = 50
-    batch_size = 1
-    lr = 0.001
+    num_epochs = args.num_epochs
+    batch_size = args.batch_size
+    lr = args.lr
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
     transform = transforms.Compose([ExtractLandmarksWithMP(holistic),
                                     ComputeDistNetWithMovement()])
-    from_checkpoint = False
+    from_checkpoint = args.from_checkpoint
     
     # Model params
     input_shape = (29, 21 * 2)
-    hidden_size = 120
-    num_layers = 1
+    hidden_size = args.hidden_size
+    num_layers = args.num_layers
     num_classes = len(label_map)
 
     match model_type:
-        case 'transformer':
+        case 'Transformer':
             model = TransformerModel(input_shape[1], num_classes)
 
-        case 'lstm':
+        case 'LSTM':
             model = LSTMModel(input_shape[1], hidden_size, num_layers, num_classes)
 
-        case 'conv':
+        case 'ConvLSTM':
             model = ConvLSTM(hidden_size, num_layers, num_classes)
 
     if from_checkpoint:
