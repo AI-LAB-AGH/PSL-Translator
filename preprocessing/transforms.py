@@ -157,4 +157,5 @@ class ExtractOpticalFlow:
         prev_gray = cv2.cvtColor(prev, cv2.COLOR_RGB2GRAY)
         curr_gray = cv2.cvtColor(curr, cv2.COLOR_RGB2GRAY)
         flow = torch.tensor(cv2.calcOpticalFlowFarneback(prev_gray, curr_gray, None, 0.5, 3, 5, 3, 5, 1.2, 0), dtype=torch.float32)
+        flow = flow[None, :]
         return flow
