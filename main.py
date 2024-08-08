@@ -13,7 +13,7 @@ from models.model_transformer import TransformerModel
 from models.model_LSTM import LSTMModel
 from models.model_conv_LSTM import ConvLSTM
 from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
-from training import train, display_results
+from training import train, trainOF, display_results
 from preprocessing.transforms import ComputeDistNetNoMovement, ComputeDistNetWithMovement, ExtractLandmarksWithMP, ExtractLandmarksWithRTMP, NormalizeDistances
 from preprocessing.datasets import LandmarksDataset, JesterDataset, ProcessedDataset, OFDataset
 
@@ -77,6 +77,10 @@ def run_real_time_inference(model, actions, transform):
 
     cap.release()
     cv2.destroyAllWindows()
+
+
+def run_real_time_inference_optical_flow(model, actions, transform):
+    pass
 
 
 def run_set_size_inference(model, actions, holistic, transform):
@@ -281,7 +285,10 @@ def main():
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-        results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
+        if model_type == 'ConvLSTM':
+            results = trainOF(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
+        else:
+            results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         display_results(results, actions)
         
     run_real_time_inference(model, actions, transform)

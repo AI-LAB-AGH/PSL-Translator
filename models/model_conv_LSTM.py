@@ -17,25 +17,30 @@ class ConvModule(nn.Module):
         self.pool4 = nn.MaxPool2d(kernel_size=2)
 
     def forward(self, x):
-        # 640 x 400 x 2
+        # TODO: Fix dimensionality (permute and flatten / unflatten batch and time series dimensions)
+        # 1 x 480 x 640 x 2
+        x = torch.permute(x, (0, 3, 1, 2))
+        # B x C x H x W
+        # 1 x 2 x 480 x 640
         x = self.conv1(x)
         x = F.relu(x)
         x = self.pool1(x)
-        # 320 x 200 x 2
+        # 2 x 240 x 320
         x = self.conv2(x)
         x = F.relu(x)
         x = self.pool2(x)
-        # 160 x 100 x 2
+        # 2 x 120 x 160
         x = self.conv3(x)
         x = F.relu(x)
         x = self.pool3(x)
-        # 80 x 50 x 2
+        # 2 x 60 x 80
         x = self.conv4(x)
         x = F.relu(x)
         x = self.pool4(x)
-        # 40 x 25 x 2
-        x = torch.flatten(x)
-        # 2000
+        # 2 x 30 x 40
+        x = x[None, :]
+        x = torch.flatten(x, start_dim=2)
+        # 1 x 1 x 2400
         return x
 
 
@@ -43,7 +48,7 @@ class ConvLSTM(nn.Module):
     def __init__(self, hidden_size, num_layers, num_classes):
         super(ConvLSTM, self).__init__()
         self.conv = ConvModule()
-        self.LSTM = PseudoLSTMModel(input_size=2000, hidden_size=hidden_size, num_layers=num_layers, num_classes=num_classes)
+        self.LSTM = PseudoLSTMModel(input_size=2400, hidden_size=hidden_size, num_layers=num_layers, num_classes=num_classes)
     
     def initialize_cell_and_hidden_state(self):
         self.LSTM.initialize_cell_and_hidden_state()
