@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import cv2
 
 class ComputeDistNetWithMovement:
     def __call__(self, sample: tuple[list, list]) -> tuple[torch.tensor, torch.tensor]:
@@ -152,8 +153,8 @@ class NormalizeDistances:
 
 
 class ExtractOpticalFlow:
-    def __init__(self):
-        pass
-
-    def __call__(self, samples: torch.tensor) -> torch.tensor:
-        pass
+    def __call__(self, prev: torch.tensor, curr: torch.tensor) -> torch.tensor:
+        prev_gray = cv2.cvtColor(prev, cv2.COLOR_RGB2GRAY)
+        curr_gray = cv2.cvtColor(curr, cv2.COLOR_RGB2GRAY)
+        flow = torch.tensor(cv2.calcOpticalFlowFarneback(prev_gray, curr_gray, None, 0.5, 3, 5, 3, 5, 1.2, 0), dtype=torch.float32)
+        return flow
