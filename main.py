@@ -14,7 +14,7 @@ from models.model_LSTM import LSTMModel
 from models.model_conv_LSTM import ConvLSTM
 from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
 from training import train, trainOF, display_results
-from preprocessing.transforms import ComputeDistNetNoMovement, ComputeDistNetWithMovement, ExtractLandmarksWithMP, ExtractLandmarksWithRTMP, NormalizeDistances
+from preprocessing.transforms import ComputeDistNetNoMovement, ComputeDistNetWithMovement, ExtractLandmarksWithMP, ExtractLandmarksWithRTMP, ExtractOpticalFlow, NormalizeDistances
 from preprocessing.datasets import LandmarksDataset, JesterDataset, ProcessedDataset, OFDataset
 
 
@@ -80,7 +80,64 @@ def run_real_time_inference(model, actions, transform):
 
 
 def run_real_time_inference_optical_flow(model, actions, transform):
-    pass
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Cannot access camera.")
+        exit()
+
+    model.initialize_cell_and_hidden_state()
+    action_text = ""
+
+    # Grab first frame so that there are 2 of them to process at the first inference step
+    success, img = cap.read()
+    if not success:
+        print("Failed to capture image.")
+        return False
+    cv2.putText(img, action_text, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.imshow('Camera', img)
+    cv2.waitKey(1)
+
+    prev = img
+
+    while True:
+        # Grab current frame
+        success, img = cap.read()
+        if not success:
+            print("Failed to capture image.")
+            return False
+        cv2.putText(img, action_text, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.imshow('Camera', img)
+
+        curr = img
+
+        # extract optical flow
+        flow = transform(prev, curr)
+
+        # Pass input through network
+        output = model(flow)
+        output[0] = torch.nn.functional.softmax(output[0])
+        confidence, predicted_index = torch.max(output, dim=1)
+        predicted_action = actions[predicted_index.item()]
+
+        # Output the recognized action
+        if confidence > 0.4:
+            action_text = f'{predicted_action}'
+            print('\r'+ ' ' * 100, end='')
+            print(f'\rRecognized action: {predicted_action} with confidence: {confidence.item():.2f}', end='')
+        else:
+            print('\r'+ ' ' * 100, end='')
+            print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
+
+        prev = curr
+
+        # Show image
+        cv2.imshow('Camera', img)
+        cv2.waitKey(1)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
 
 
 def run_set_size_inference(model, actions, holistic, transform):
@@ -290,8 +347,11 @@ def main():
         else:
             results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         display_results(results, actions)
-        
-    run_real_time_inference(model, actions, transform)
+    
+    if model_type == 'ConvLSTM':
+        run_real_time_inference_optical_flow(model, actions, transform=ExtractOpticalFlow())
+    else:
+        run_real_time_inference(model, actions, transform)
 
 if __name__ == "__main__":
     main()
