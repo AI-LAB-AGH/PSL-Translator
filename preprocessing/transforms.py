@@ -149,3 +149,11 @@ class NormalizeDistances:
                 frame = frame.view(21 * 2)
 
          return (left, right)
+
+
+class ExtractOpticalFlow:
+    def __init__(self):
+        pass
+
+    def __call__(self, samples: torch.tensor) -> torch.tensor:
+        pass

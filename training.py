@@ -95,7 +95,7 @@ def train(model: torch.nn.Module,
     return {'history': history, 'accuracy': accuracy, 'cm': cm}
 
 
-def train(model: torch.nn.Module,
+def trainOF(model: torch.nn.Module,
           train_loader: torch.utils.data.DataLoader,
           test_loader: torch.utils.data.DataLoader,
           num_epochs=10,
