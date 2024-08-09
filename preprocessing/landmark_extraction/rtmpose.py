@@ -434,20 +434,25 @@ def decode(simcc_x: np.ndarray, simcc_y: np.ndarray,
 
 
 class RTMPoseDetector:
-    def __init__(self, filepath, device='cpu'):
+    def __init__(self, filepath, device='cpu', confidence=0.4):
         self.session = build_session(filepath, device)
         h, w = self.session.get_inputs()[0].shape[2:]
         self.input_size = (w, h)
+        self.confidence = confidence
 
     def __call__(self, img):
         resized_img, center, scale = preprocess(img, self.input_size)
         outputs = inference(self.session, resized_img)
-        keypoints, scores = postprocess(outputs, self.input_size, center, scale)
+        landmarks, scores = postprocess(outputs, self.input_size, center, scale)
 
-        left, right = keypoints[0][91:112, :], keypoints[0][112:, :]
-        scores_l, scores_r = scores[0][91:112], scores[0][112:]
+        landmarks = landmarks[0]
+        scores = scores[0]
 
-        return (left, right), (scores_l, scores_r)
+        for i, score in enumerate(scores):
+            if score < self.confidence:
+                landmarks[i] = np.zeros((2))
+
+        return landmarks
 
 
 def main():
