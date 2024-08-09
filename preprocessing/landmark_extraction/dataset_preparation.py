@@ -82,33 +82,16 @@ class LandmarkExtractor:
         return self.transform(self.model, img)
 
 
-def extract_landmarks_with_RTMP(model, sample, confidence=0.6):
-    left = []
-    right = []
-
+def extract_landmarks_with_RTMP(model, sample):
+    landmarks = []
     for frame in sample:
-        hands, scores = model(frame)
         h, w, c = frame.shape
+        result = model(frame)
+        result[:, 0] /= w
+        result[:, 1] /= h
+        landmarks.append(result)
 
-        if np.all(scores[0] < confidence):
-            l = torch.tensor(np.array([]))
-        else:
-            l = torch.tensor(hands[0])
-            l[:, 0] /= w
-            l[:, 1] /= h
-            l = l.view(21 * 2)
-        left.append(l)
-
-        if np.all(scores[1] < confidence):
-            r = torch.tensor(np.array([]))
-        else:
-            r = torch.tensor(hands[1])
-            r[:, 0] /= w
-            r[:, 1] /= h
-            r = r.view(21 * 2)
-        right.append(r)
-
-    return (left, right)
+    return landmarks
 
 
 def extract_landmarks_with_MP(holistic, sample):
@@ -158,8 +141,8 @@ def preprocess_directory(root_dir: str, tgt_dir: str, annotations: dict, label_m
         sample = [cv2.imread(os.path.join(path, frame)) for frame in frames]
         label = label_map[annotations[dir]]
 
-        (left, right) = extractor(sample)
-        data.append((label, left, right))
+        landmarks = extractor(sample)
+        data.append((label, landmarks))
 
         print(f'\rDirectory {i+1}/{num_dirs} processed', end='')
 
@@ -209,8 +192,8 @@ def main():
     # preprocess_landmarks(root_dir, tgt_dir)
 
     ### PREPROCESSING .JPG FRAMES
-    root_dir = 'data/RGB'
-    tgt_dir = 'data/RGB_RTMP'
+    root_dir = 'data/jester'
+    tgt_dir = 'data/jester_RTMP'
 
     ## Mediapipe
     # model = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
@@ -222,7 +205,7 @@ def main():
     
     extractor = LandmarkExtractor(model, transform)
     prepare_dataset(root_dir, tgt_dir, extractor)
-
+ 
 
 if __name__ == '__main__':
     main()
