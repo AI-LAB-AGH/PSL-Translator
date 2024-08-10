@@ -233,7 +233,7 @@ def main():
     print(from_checkpoint)
     
     # Model params
-    input_shape = (29, 133 * 2)
+    input_shape = (29, (133 + 42) * 2) # All landmarks + 2 hands relative to the body source
     hidden_size = args.hidden_size
     num_layers = args.num_layers
     num_classes = len(label_map)
