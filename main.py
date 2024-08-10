@@ -1,13 +1,12 @@
 import cv2
 import json
 import torch
-# import keyboard
 import argparse
-from pynput import keyboard
 import numpy as np
 import mediapipe as mp
-from torch.utils.data import DataLoader
+from pynput import keyboard
 from torchvision import transforms
+from torch.utils.data import DataLoader
 
 from models.model_transformer import TransformerModel
 from models.model_LSTM import LSTMModel
@@ -18,12 +17,33 @@ from preprocessing.transforms import ComputeDistNetNoMovement, ComputeDistNetWit
 from preprocessing.datasets import LandmarksDataset, JesterDataset, ProcessedDataset, OFDataset
 
 
-def draw_landmarks(img, holistic):
-    results = holistic.process(img)
-    
-    mp.solutions.drawing_utils.draw_landmarks(img, results.left_hand_landmarks, mp.solutions.holistic.HAND_CONNECTIONS)
-    mp.solutions.drawing_utils.draw_landmarks(img, results.right_hand_landmarks, mp.solutions.holistic.HAND_CONNECTIONS)
-    
+def draw_landmarks(img, landmarks):
+    h, w, c = img.shape
+
+    source_body = landmarks[0].clone()
+    source_face = landmarks[53].clone()
+    source_left = landmarks[100].clone()
+    source_right = landmarks[121].clone()
+
+    body = landmarks[:17]
+    face = landmarks[23:91]
+    left = landmarks[91:112]
+    right = landmarks[112:]
+
+    # for l in body:
+    #     cv2.line(img, (int(source_body[0] * w), int(source_body[1] * h)), (int(l[0] * w), int(l[1] * h)), (0, 0, 255))
+
+    # for l in face:
+    #     cv2.line(img, (int(source_face[0] * w), int(source_face[1] * h)), (int(l[0] * w), int(l[1] * h)), (0, 0, 255))
+
+    for l in left:
+        # cv2.line(img, (int(source_left[0] * w), int(source_left[1] * h)), (int(l[0] * w), int(l[1] * h)), (0, 0, 255))
+        cv2.line(img, (int(source_body[0] * w), int(source_body[1] * h)), (int(l[0] * w), int(l[1] * h)), (0, 255, 0))
+
+    for l in right:
+        # cv2.line(img, (int(source_right[0] * w), int(source_right[1] * h)), (int(l[0] * w), int(l[1] * h)), (0, 0, 255))
+        cv2.line(img, (int(source_body[0] * w), int(source_body[1] * h)), (int(l[0] * w), int(l[1] * h)), (0, 255, 0))
+
     return img
 
 
@@ -46,12 +66,13 @@ def run_real_time_inference(model, actions, transform):
         cv2.imshow('Camera', img)
         
         # Process frame to obtain model input
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) ## MediaPipe only
+        x = transform([img])
+        x = torch.tensor(x[0], dtype=torch.float32)
 
-        (left, right) = transform([img])
+        # draw_landmarks(img, x)
 
-        left = left[0].view(1, 1, -1)
-        right = right[0].view(1, 1, -1)
+        x = x.view(1, 1, 133, 2)
+        output = model(x)
 
         # Pass input through network
         output = model(left, right)
@@ -69,10 +90,8 @@ def run_real_time_inference(model, actions, transform):
             print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
 
         # Show image
-        # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR) ## MediaPipe only
         cv2.imshow('Camera', img)
-        cv2.waitKey(1)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(1) == 27:
             break
 
     cap.release()
@@ -226,7 +245,6 @@ def run_set_size_inference(model, actions, holistic, transform):
     cv2.destroyAllWindows()
 
 
-
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default=None, help='Model to use (LSTM, ConvLSTM, Transformer)')
@@ -263,8 +281,8 @@ def main():
     model_path = 'models/pretrained/'+model_type+'_'+dataset+'.pth'
 
     # Landmark extraction methods
-    holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
-    #extractor = RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx')
+    # holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
+    extractor = RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx')
 
     # Training params
     num_epochs = args.num_epochs
@@ -272,12 +290,12 @@ def main():
     lr = args.lr
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
-    transform = transforms.Compose([ExtractLandmarksWithMP(holistic),
-                                    ComputeDistNetWithMovement()])
+    transform = transforms.Compose([ExtractLandmarksWithRTMP(extractor)])
     from_checkpoint = args.from_checkpoint
+    print(from_checkpoint)
     
     # Model params
-    input_shape = (29, 21 * 2)
+    input_shape = (29, 133 * 2)
     hidden_size = args.hidden_size
     num_layers = args.num_layers
     num_classes = len(label_map)

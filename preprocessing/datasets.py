@@ -4,6 +4,7 @@ import torch
 import numpy as np
 from skimage import io
 from torch.utils.data import Dataset
+from preprocessing.transforms import ComputeDistances
 
 
 class LandmarksDataset(Dataset):
@@ -80,20 +81,17 @@ class ProcessedDataset(Dataset):
     def __init__(self, root_dir: str, transform=None, target_transform=None):
         self.filepath = os.path.join(root_dir, 'data.pth')
         self.data = torch.load(self.filepath)
-        for (label, left, right) in self.data:
-            if target_transform:
-                label = target_transform(label)
-            if transform:
-                (left, right) = transform((left, right))
+        # computer = ComputeDistances()
+        # for (label, sample) in self.data:
+        #     sample = computer(sample)
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        (label, left, right) = self.data[idx]
-        sample = (left, right)
-
+        (label, sample) = self.data[idx]
         return sample, label
+
 
 class OFDataset(Dataset):
     def __init__(self, root_dir: str, transform=None, target_transform=None):
