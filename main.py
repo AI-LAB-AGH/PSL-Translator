@@ -120,7 +120,7 @@ def run_real_time_inference_optical_flow(model, actions, transform):
         predicted_action = actions[predicted_index.item()]
 
         # Output the recognized action
-        if confidence > 0.4:
+        if confidence > 0.6:
             action_text = f'{predicted_action}'
             print('\r'+ ' ' * 100, end='')
             print(f'\rRecognized action: {predicted_action} with confidence: {confidence.item():.2f}', end='')
