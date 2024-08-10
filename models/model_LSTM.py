@@ -7,11 +7,10 @@ class LSTMModel(nn.Module):
         self.hidden_size = hidden_size
         self.num_layers = num_layers
 
-        self.lstm_l = nn.LSTM(input_size, hidden_size, num_layers)
-        self.lstm_r = nn.LSTM(input_size, hidden_size, num_layers)
-        self.fc = nn.Linear(2*hidden_size, num_classes)
+        self.lstm = nn.LSTM(input_size + 42 * 2, hidden_size, num_layers)
+        self.fc = nn.Linear(hidden_size, num_classes)
 
-        self.h_l = self.c_l = self.h_r = self.c_r = None
+        self.h = self.c = None
 
 
     def initialize_cell_and_hidden_state(self) -> None:
@@ -23,54 +22,60 @@ class LSTMModel(nn.Module):
         
         """
 
-        self.h_l = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial left hidden state
-        self.c_l = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial left cell state
-        self.h_r = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial right hidden state
-        self.c_r = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial right cell state
+        self.h = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial right hidden state
+        self.c = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial right cell state
 
 
-    def forward(self, left: torch.tensor, right: torch.tensor) -> torch.tensor:
-        """
-        Forwards a single frame of landmarks through the network. 
-        
-        Dimensions are annotated for a better understanding of how data is passed forward.
-        Below is a dictionary for the symbols used:
-            - L:   length of the sequence (always 1 in this version of the model)
-            - N:   batch size
-            - IN:  input size
-            - H:   hidden size
-            - LAY: number of layers in nn.LSTM
-            - OUT: number of classes
+    def prepare_input(self, x: torch.tensor):
+        x = x.float()
+        x = x.unsqueeze(1)
 
-        """
-        
         # Input dims: N x L x IN
-        if left.shape[2] != 0: # Left hand detected
-            # After permute: L x N x IN
-            left = torch.permute(left, (1, 0, 2))
+        source_body = x[0][0][0].clone()
+        source_face = x[0][0][53].clone()
+        source_left = x[0][0][100].clone()
+        source_right = x[0][0][121].clone()
 
-            # Output dims: L x N x H
-            out_l, (self.h_l, self.c_l) = self.lstm_l(left, (self.h_l, self.c_l))
+        body = x[0][0][:17]
+        feet = x[0][0][17:23]
+        face = x[0][0][23:91]
+        left = x[0][0][91:112]
+        right = x[0][0][112:]
+        w_left = torch.max(left[:, 0]) - torch.min(left[:, 0])
+        h_left = torch.max(left[:, 1]) - torch.min(left[:, 1])
+        w_right = torch.max(right[:, 0]) - torch.min(right[:, 0])
+        h_right = torch.max(right[:, 1]) - torch.min(right[:, 1])
 
-            # Grab the output from the last timestep 
-            out_l = out_l[-1, :, :]
-        else:
-            out_l = torch.zeros([left.shape[0], self.hidden_size])
+        chin2left = left - source_body
+        chin2right = right - source_body
+        body -= source_body
+        face -= source_face
+        left -= source_left
+        right -= source_right
 
-        if right.shape[2] != 0: # Right hand detected
-            right = torch.permute(right, (1, 0, 2))
-            out_r, (self.h_r, self.c_r) = self.lstm_r(right, (self.h_r, self.c_r))
-            out_r = out_r[-1, :, :]
-        else:
-            out_r = torch.zeros([right.shape[0], self.hidden_size])
+        if w_left != 0. and h_left != 0:
+            left[:, 0] /= w_left
+            left[:, 1] /= h_left
 
-        # Concatenate the left and right outputs
-        out = torch.cat([out_l, out_r], dim=1)
+        if w_right != 0. and h_right != 0:
+            right[:, 0] /= w_right
+            right[:, 1] /= h_right
 
-        # Matmul dims: (N x 2H) * (2H x OUT) = N x OUT
+        x = torch.concat([body, feet, face, left, right, chin2left, chin2right])
+        x = x.view(1, 1, (133 + 42) * 2)
+
+        return x
+    
+
+    def forward(self, x: torch.tensor) -> torch.tensor:
+        x = self.prepare_input(x)
+        x = torch.permute(x, (1, 0, 2))
+
+        out, (self.h, self.c) = self.lstm(x, (self.h, self.c))
+        out = out[-1, :, :]
         return self.fc(out)
-    
-    
+
+
 class PseudoLSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(PseudoLSTMModel, self).__init__()
@@ -82,10 +87,22 @@ class PseudoLSTMModel(nn.Module):
         self.c = None
 
     def initialize_cell_and_hidden_state(self) -> None:
-        self.h = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial left hidden state
-        self.c = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial left hidden state
+        self.h = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial hidden state
+        self.c = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial cell state
 
     def forward(self, x: torch.tensor) -> torch.tensor:
+        """
+        Forwards a single frame of landmarks through the network. 
+        
+        Dimensions are annotated for a better understanding of how data is passed forward.
+        Below is a dictionary for the symbols used:
+            - L:   length of the sequence (always 1 in this version of the model)
+            - N:   batch size
+            - IN:  input size
+            - H:   hidden size
+            - OUT: number of classes
+
+        """
         # Input dims: N x L x IN
         #x = torch.permute(x, (1, 0, 2))
 
@@ -95,5 +112,5 @@ class PseudoLSTMModel(nn.Module):
         # Grab the output from the last timestep 
         out = out[-1, :, :]
 
-        # Matmul dims: (N x 2H) * (2H x OUT) = N x OUT
+        # Matmul dims: (N x H) * (H x OUT) = N x OUT
         return self.fc(out)
