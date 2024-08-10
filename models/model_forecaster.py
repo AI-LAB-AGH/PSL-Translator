@@ -1,15 +1,14 @@
 import torch.nn as nn
 import torch
 
-class LSTMModel(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, num_classes):
-        super(LSTMModel, self).__init__()
-        self.input_size = input_size
+class Forecaster(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers):
+        super(Forecaster, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
 
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers)
-        self.fc = nn.Linear(hidden_size, num_classes)
+        self.fc = nn.Linear(hidden_size, input_size)
 
         self.h = self.c = None
 
@@ -63,7 +62,7 @@ class LSTMModel(nn.Module):
             right[:, 1] /= h_right
 
         x = torch.concat([body, feet, face, left, right, chin2left, chin2right])
-        x = x.view(1, 1, self.input_size)
+        x = x.view(1, 1, (133 + 42) * 2)
 
         return x
     
@@ -74,44 +73,4 @@ class LSTMModel(nn.Module):
 
         out, (self.h, self.c) = self.lstm(x, (self.h, self.c))
         out = out[-1, :, :]
-        return self.fc(out)
-
-
-class PseudoLSTMModel(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, num_classes):
-        super(PseudoLSTMModel, self).__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers)
-        self.fc = nn.Linear(hidden_size, num_classes)
-        self.hidden_size = hidden_size
-        self.num_layers = num_layers
-        self.h = None
-        self.c = None
-
-    def initialize_cell_and_hidden_state(self) -> None:
-        self.h = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial hidden state
-        self.c = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial cell state
-
-    def forward(self, x: torch.tensor) -> torch.tensor:
-        """
-        Forwards a single frame of landmarks through the network. 
-        
-        Dimensions are annotated for a better understanding of how data is passed forward.
-        Below is a dictionary for the symbols used:
-            - L:   length of the sequence (always 1 in this version of the model)
-            - N:   batch size
-            - IN:  input size
-            - H:   hidden size
-            - OUT: number of classes
-
-        """
-        # Input dims: N x L x IN
-        #x = torch.permute(x, (1, 0, 2))
-
-        # Output dims: L x N x H
-        out, (self.h, self.c) = self.lstm(x, (self.h, self.c))
-
-        # Grab the output from the last timestep 
-        out = out[-1, :, :]
-
-        # Matmul dims: (N x H) * (H x OUT) = N x OUT
         return self.fc(out)
