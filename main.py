@@ -12,8 +12,8 @@ from models.model_transformer import TransformerModel
 from models.model_LSTM import LSTMModel
 from models.model_conv_LSTM import ConvLSTM
 from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
-from training import train, trainOF, display_results
-from preprocessing.transforms import ComputeDistNetNoMovement, ComputeDistNetWithMovement, ExtractLandmarksWithMP, ExtractLandmarksWithRTMP, ExtractOpticalFlow, NormalizeDistances
+from training import train, display_results
+from preprocessing.transforms import ExtractLandmarksWithRTMP, ExtractOpticalFlow
 from preprocessing.datasets import LandmarksDataset, JesterDataset, ProcessedDataset, OFDataset
 
 
@@ -282,7 +282,8 @@ def main():
 
     # Landmark extraction methods
     # holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
-    extractor = RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx')
+    if model_type == 'lstm':
+        extractor = RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx')
 
     # Training params
     num_epochs = args.num_epochs
@@ -290,7 +291,10 @@ def main():
     lr = args.lr
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
-    transform = transforms.Compose([ExtractLandmarksWithRTMP(extractor)])
+    if model_type == 'lstm':
+        transform = transforms.Compose([ExtractLandmarksWithRTMP(extractor)])
+    else:
+        transform = None
     from_checkpoint = args.from_checkpoint
     print(from_checkpoint)
     
@@ -360,10 +364,10 @@ def main():
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-        if model_type == 'ConvLSTM':
-            results = trainOF(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
-        else:
-            results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
+        # if model_type == 'ConvLSTM':
+        #     results = trainOF(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
+        # else:
+        results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         display_results(results, actions)
     
     if model_type == 'ConvLSTM':
