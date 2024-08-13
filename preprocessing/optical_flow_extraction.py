@@ -23,6 +23,8 @@ def process_data(root_dir: str, target_dir: str, batch_size: int, annotations: d
     data = []
     total = len(os.listdir(root_dir))
     for i, dir in enumerate(os.listdir(root_dir)):
+        if i % batch_size == 0:
+            first_in_batch = i
         path = os.path.join(root_dir, dir)
         frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
         sample = [io.imread(os.path.join(path, frame)) for frame in frames]
@@ -30,8 +32,9 @@ def process_data(root_dir: str, target_dir: str, batch_size: int, annotations: d
         flow = extract_optical_flow(sample)
         data.append((label, flow))
         print(f'\rDirectory {i+1}/{total} processed', end='')
-    torch.save(data, os.path.join(target_dir, 'data.pth'))
-    data.clear()
+        if (i + 1) % batch_size == 0 or i + 1 == total:
+            torch.save(data, os.path.join(target_dir, f'data_{first_in_batch}_{i}.pth'))
+            data.clear()
 
 
 def rgb_to_optical_flow_dataset(root_dir: str, target_dir: str, batch_size: int):
