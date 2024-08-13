@@ -6,6 +6,7 @@ import json
 import csv
 import argparse
 from skimage import io
+from typing import Any
 
 def extract_optical_flow(frames: list[np.ndarray]) -> list[np.ndarray]:
     flow = []
@@ -18,7 +19,22 @@ def extract_optical_flow(frames: list[np.ndarray]) -> list[np.ndarray]:
     return flow
 
 
-def rgb_to_optical_flow_dataset(root_dir, target_dir):
+def process_data(root_dir: str, target_dir: str, batch_size: int, annotations: dict, label_map: Any):
+    data = []
+    total = len(os.listdir(root_dir))
+    for i, dir in enumerate(os.listdir(root_dir)):
+        path = os.path.join(root_dir, dir)
+        frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
+        sample = [io.imread(os.path.join(path, frame)) for frame in frames]
+        label = label_map[annotations[dir]]
+        flow = extract_optical_flow(sample)
+        data.append((label, flow))
+        print(f'\rDirectory {i+1}/{total} processed', end='')
+    torch.save(data, os.path.join(target_dir, 'data.pth'))
+    data.clear()
+
+
+def rgb_to_optical_flow_dataset(root_dir: str, target_dir: str, batch_size: int):
     labels = os.path.join(root_dir, 'labels.json')
     with open(labels, 'r', encoding='utf-8') as f:
         label_map = json.load(f)
@@ -36,32 +52,8 @@ def rgb_to_optical_flow_dataset(root_dir, target_dir):
         annotations_test = {row[0]: row[1] for row in reader}
     f.close()
 
-    train = []
-    total = len(os.listdir(train_dir))
-    for i, dir in enumerate(os.listdir(train_dir)):
-        path = os.path.join(train_dir, dir)
-        frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
-        sample = [io.imread(os.path.join(path, frame)) for frame in frames]
-        label = label_map[annotations_train[dir]]
-        flow = extract_optical_flow(sample)
-        train.append((label, flow))
-        print(f'\rDirectory {i+1}/{total} processed', end='')
-    torch.save(train, os.path.join(target_train_dir, 'data.pth'))
-    train.clear()
-
-    # test = torch.load(os.path.join(tgt_test_dir, 'data.pth'))
-    test = []
-    total = len(os.listdir(test_dir))
-    for i, dir in enumerate(os.listdir(test_dir)):
-        path = os.path.join(test_dir, dir)
-        frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
-        sample = [io.imread(os.path.join(path, frame)) for frame in frames]
-        label = label_map[annotations_test[dir]]
-        flow = extract_optical_flow(sample)
-        test.append((label, flow))
-        print(f'\rDirectory {i+1}/{total} processed', end='')
-    torch.save(test, os.path.join(target_test_dir, 'data.pth'))
-    test.clear()
+    process_data(train_dir, target_train_dir, batch_size, annotations_train, label_map)
+    process_data(test_dir, target_test_dir, batch_size, annotations_test, label_map)
 
 
 def get_args():
@@ -77,11 +69,11 @@ def get_args():
 def main():
     # get CLI arguments
     args = get_args()
-    barch_size = args.batch_size
+    batch_size = args.batch_size
     root_dir = args.root_dir
     tgt_dir = args.target_dir
-    
-    rgb_to_optical_flow_dataset(root_dir, tgt_dir)
+
+    rgb_to_optical_flow_dataset(root_dir, tgt_dir, batch_size=batch_size)
 
 if __name__ == '__main__':
     main()
