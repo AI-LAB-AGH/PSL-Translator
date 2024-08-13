@@ -178,3 +178,6 @@ data_old/
 /data_old/
 
 test.py
+
+data/RGB_P/*
+data/RBG_debug/*

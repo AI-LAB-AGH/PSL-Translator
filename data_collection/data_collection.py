@@ -86,7 +86,7 @@ def main():
         listener.start()
 
         for sequence in range(sequences):
-            print(f'space {space_pressed}, right {right_arrow_pressed}, left {left_arrow_pressed}')
+            #print(f'space {space_pressed}, right {right_arrow_pressed}, left {left_arrow_pressed}')
             while not space_pressed:
                 image = draw_landmarks(cap, holistic)
                 add_window_text(image, action)

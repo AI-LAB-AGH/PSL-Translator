@@ -4,6 +4,7 @@ import torch
 import os
 import json
 import csv
+import argparse
 from skimage import io
 
 def extract_optical_flow(frames: list[np.ndarray]) -> list[np.ndarray]:
@@ -63,11 +64,23 @@ def rgb_to_optical_flow_dataset(root_dir, target_dir):
     test.clear()
 
 
+def get_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--batch_size', type=int, default=10, help='Number of video samples to be stored in each .pth file')
+    parser.add_argument('--root_dir', type=str, default=os.path.join('data', 'RGB_debug'), help='Root directory containing the raw video dataset (.jpg)')
+    parser.add_argument('--target_dir', type=str, default=os.path.join('data', 'RGB_OF'), help='Directory in which to save optical flow sequences (.pth)')
+
+    return parser.parse_args()
 
 
 def main():
-    root_dir = os.path.join('data', 'RGB_debug')
-    tgt_dir = os.path.join('data', 'RGB_OF')
+    # get CLI arguments
+    args = get_args()
+    barch_size = args.batch_size
+    root_dir = args.root_dir
+    tgt_dir = args.target_dir
+    
     rgb_to_optical_flow_dataset(root_dir, tgt_dir)
 
 if __name__ == '__main__':
