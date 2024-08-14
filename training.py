@@ -96,6 +96,90 @@ def train(model: torch.nn.Module,
     cm = confusion_matrix(all_labels, all_preds)
     return {'history': history, 'accuracy': accuracy, 'cm': cm}
 
+def train_forecaster(model: torch.nn.Module,
+          train_loader: torch.utils.data.DataLoader,
+          test_loader: torch.utils.data.DataLoader,
+          num_epochs=10,
+          lr = 0.001,
+          crit=torch.nn.MSELoss, 
+          optim=torch.optim.Adam,
+          save_path=None) -> dict:
+    
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+    criterion = crit()
+    optimizer = optim(model.parameters(), lr)
+    history = {'epoch': [], 'loss': [], 'mse': []}
+
+    for epoch in range(num_epochs):
+        model.train()
+        running_loss = 0.0
+        for i, data in enumerate(train_loader):
+            # Input dims: N x L x IN
+            inputs, _ = data
+            
+            optimizer.zero_grad()
+            model.initialize_cell_and_hidden_state() 
+            batch_loss = 0.0
+            
+            for frame in range(len(inputs) - 1): 
+                x = inputs[frame]
+                outputs = model(x)
+                loss = criterion(outputs, inputs[frame+1]) 
+                loss.backward()
+                optimizer.step()
+                batch_loss += loss.item()
+                
+            running_loss += batch_loss / (len(inputs) - 1)
+            print(f'\rEpoch {epoch+1}/{num_epochs}, Batch {i+1}/{len(train_loader)} complete', end='')
+
+        model.eval()
+        mse_values = []
+        with torch.no_grad():
+            for data in test_loader:
+                inputs, _ = data
+
+                optimizer.zero_grad()
+                outputs = None
+                model.initialize_cell_and_hidden_state()
+                for frame in range(len(inputs)-1):
+                    x = inputs[frame]
+                    outputs = model(x)
+                    mse = criterion(outputs, inputs[frame + 1])
+                    mse_values.append(mse.item())
+        
+        avg_mse = sum(mse_values) / len(mse_values)
+        history['epoch'].append(epoch + 1)
+        history['loss'].append(running_loss / len(train_loader))
+        history['mse'].append(avg_mse)
+
+        print(f'\rEpoch {epoch+1}/{num_epochs}, Loss: {running_loss/len(train_loader)}, Avg MSE: {avg_mse}')
+
+    with open('training_history.json', 'w') as f:
+        json.dump(history, f)
+    
+    if save_path is not None:
+        torch.save(model.state_dict(), save_path)
+
+    model.eval()
+    mse_values = []
+    with torch.no_grad():
+        for data in test_loader:
+            inputs, _ = data
+
+            optimizer.zero_grad()
+            outputs = None
+            model.initialize_cell_and_hidden_state()
+            for frame in range(len(inputs)-1):
+                x = inputs[frame]
+                outputs = model(x)
+            
+            mse = criterion(outputs, inputs[frame + 1])
+            mse_values.append(mse.item())
+
+    avg_mse = sum(mse_values) / len(mse_values)
+    #TODO: Add visualization of MSE
+    return {'history': history, 'avg_mse': avg_mse}
 
 def display_results(results: dict, actions):
     history = results['history']
