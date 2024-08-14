@@ -1,10 +1,8 @@
 # Datasets
 data/*/*/
 data/*/*.csv
-!data/landmarks_P/*
-!data/RGB_P/*
-!data/jester_P/*
 preprocessing/landmark_extraction/end2end.onnx
+
 
 # Byte-compiled / optimized / DLL files
 *__pycache__/
