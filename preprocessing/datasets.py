@@ -94,19 +94,13 @@ class ProcessedDataset(Dataset):
 
 
 class OFDataset(Dataset):
-    def __init__(self, root_dir: str, transform=None, target_transform=None):
+    def __init__(self, root_dir: str):
         self.filepath = os.path.join(root_dir, 'data.pth')
         self.data = torch.load(self.filepath)
-        for (label, sample) in self.data:
-            if target_transform:
-                label = target_transform(label)
-            if transform:
-                sample = transform(sample)
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
         (label, sample) = self.data[idx]
-
         return sample, label
