@@ -75,7 +75,10 @@ def preprocess_directory(root_dir: str, tgt_dir: str, annotations: dict, label_m
         path = os.path.join(root_dir, dir)
         frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
         sample = [cv2.imread(os.path.join(path, frame)) for frame in frames]
-        label = label_map[annotations[dir]]
+        if label_map is not None:
+            label = label_map[annotations[dir]]
+        else:
+            label = annotations[dir]
 
         landmarks = extractor(sample)
         data.append((label, landmarks))
@@ -90,9 +93,9 @@ def preprocess_directory(root_dir: str, tgt_dir: str, annotations: dict, label_m
 
 
 def prepare_dataset(root_dir: str, tgt_dir: str, extractor) -> None:
-    labels = os.path.join(root_dir, 'labels.json')
-    with open(labels, 'r', encoding='utf-8') as f:
-        label_map = json.load(f)
+    # labels = os.path.join(root_dir, 'labels.json')
+    # with open(labels, 'r', encoding='utf-8') as f:
+    #     label_map = json.load(f)
 
     train_dir = os.path.join(root_dir, 'train')
     test_dir = os.path.join(root_dir, 'test')
@@ -101,8 +104,8 @@ def prepare_dataset(root_dir: str, tgt_dir: str, extractor) -> None:
 
     (annotations_train, annotations_test) = get_annotations(root_dir)
 
-    preprocess_directory(train_dir, tgt_train_dir, annotations_train, label_map, extractor)
-    preprocess_directory(test_dir, tgt_test_dir, annotations_test, label_map, extractor)
+    preprocess_directory(train_dir, tgt_train_dir, annotations_train, None, extractor)
+    preprocess_directory(test_dir, tgt_test_dir, annotations_test, None, extractor)
 
 
 def inference(model):
@@ -128,8 +131,8 @@ def main():
     # preprocess_landmarks(root_dir, tgt_dir)
 
     ### PREPROCESSING .JPG FRAMES
-    root_dir = 'data/jester'
-    tgt_dir = 'data/jester_RTMP'
+    root_dir = 'F:/test/KSPJM'
+    tgt_dir = 'data/KSPJM_RTMP'
 
     ## Mediapipe
     # model = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
