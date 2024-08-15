@@ -96,6 +96,7 @@ def train(model: torch.nn.Module,
     cm = confusion_matrix(all_labels, all_preds)
     return {'history': history, 'accuracy': accuracy, 'cm': cm}
 
+
 def train_forecaster(model: torch.nn.Module,
           train_loader: torch.utils.data.DataLoader,
           test_loader: torch.utils.data.DataLoader,
@@ -125,14 +126,15 @@ def train_forecaster(model: torch.nn.Module,
             for frame in range(len(inputs) - 1): 
                 x = inputs[frame]
                 outputs = model(x)
-                loss = criterion(outputs, inputs[frame+1]) 
+                outputs = outputs.view(outputs.shape[1] // 2, 2)
+                loss = criterion(outputs, inputs[frame+1][0].float())
                 loss.backward()
                 optimizer.step()
                 batch_loss += loss.item()
                 
             running_loss += batch_loss / (len(inputs) - 1)
             print(f'\rEpoch {epoch+1}/{num_epochs}, Batch {i+1}/{len(train_loader)} complete', end='')
-
+            
         model.eval()
         mse_values = []
         with torch.no_grad():
