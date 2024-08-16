@@ -95,8 +95,11 @@ class ProcessedDataset(Dataset):
 
 class OFDataset(Dataset):
     def __init__(self, root_dir: str):
-        self.filepath = os.path.join(root_dir, 'data.pth')
-        self.data = torch.load(self.filepath)
+        self.data = None
+        self.batch_size = 5
+        self.curr_first = 0
+        self.root_dir = root_dir
+        self.load_data(0)
 
     def __len__(self):
         return len(self.data)
@@ -104,3 +107,9 @@ class OFDataset(Dataset):
     def __getitem__(self, idx):
         (label, sample) = self.data[idx]
         return sample, label
+
+    def load_data(self, first_idx):
+        self.data = torch.load(os.path.join(self.root_dir, f'data_{first_idx}_{first_idx + self.batch_size - 1}.pth'))
+    
+    def count_samples(self):
+        pass
