@@ -8,70 +8,6 @@ import mediapipe as mp
 from skimage import io
 from rtmpose import RTMPoseDetector
 
-def preprocess_landmarks(root_dir: str, tgt_dir: str) -> None:
-    labels = os.path.join(root_dir, 'labels.json')
-    with open(labels, 'r', encoding='utf-8') as f:
-        label_map = json.load(f)
-    train_dir = os.path.join(root_dir, 'train')
-    test_dir = os.path.join(root_dir, 'test')
-    target_train_dir = os.path.join(tgt_dir, 'train')
-    target_test_dir = os.path.join(tgt_dir, 'test')
-
-    with open(os.path.join(root_dir, 'annotations_train.csv'), mode='r', encoding='utf-8') as f:
-        reader = csv.reader(f)
-        annotations_train = {row[0]: row[1] for row in reader}
-    f.close()
-    with open(os.path.join(root_dir, 'annotations_test.csv'), mode='r', encoding='utf-8') as f:
-        reader = csv.reader(f)
-        annotations_test = {row[0]: row[1] for row in reader}
-    f.close()
-
-    train = []
-    for dir in os.listdir(train_dir):
-        path = os.path.join(train_dir, dir)
-        frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
-        sample = [np.load(os.path.join(path, frame)) for frame in frames]
-
-        left, right = [], []
-        for frame in sample:
-            if np.all([_ == 0. for _ in frame[:63]]):
-                left.append(torch.tensor(np.array([])))
-            else:
-                left.append(torch.tensor(frame[:63]))
-
-            if np.all([_ == 0. for _ in frame[63:]]):
-                right.append(torch.tensor(np.array([])))
-            else:
-                right.append(torch.tensor(frame[63:]))
-            
-        label = label_map[annotations_train[dir]]
-        train.append((label, left, right))
-    torch.save(train, os.path.join(target_train_dir, 'data.pth'))
-    train.clear()
-
-    test = []
-    for dir in os.listdir(test_dir):
-        path = os.path.join(test_dir, dir)
-        frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
-        sample = [np.load(os.path.join(path, frame)) for frame in frames]
-
-        left, right = [], []
-        for frame in sample:
-            if np.all([_ == 0. for _ in frame[:63]]):
-                left.append(torch.tensor(np.array([])))
-            else:
-                left.append(torch.tensor(frame[:63]))
-
-            if np.all([_ == 0. for _ in frame[63:]]):
-                right.append(torch.tensor(np.array([])))
-            else:
-                right.append(torch.tensor(frame[63:]))
-            
-        label = label_map[annotations_test[dir]]
-        test.append((label, left, right))
-    torch.save(test, os.path.join(target_test_dir, 'data.pth'))
-    test.clear()
-
 
 class LandmarkExtractor:
     def __init__(self, model, transform):
@@ -139,7 +75,10 @@ def preprocess_directory(root_dir: str, tgt_dir: str, annotations: dict, label_m
         path = os.path.join(root_dir, dir)
         frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
         sample = [cv2.imread(os.path.join(path, frame)) for frame in frames]
-        label = label_map[annotations[dir]]
+        if label_map is not None:
+            label = label_map[annotations[dir]]
+        else:
+            label = annotations[dir]
 
         landmarks = extractor(sample)
         data.append((label, landmarks))
@@ -154,9 +93,9 @@ def preprocess_directory(root_dir: str, tgt_dir: str, annotations: dict, label_m
 
 
 def prepare_dataset(root_dir: str, tgt_dir: str, extractor) -> None:
-    labels = os.path.join(root_dir, 'labels.json')
-    with open(labels, 'r', encoding='utf-8') as f:
-        label_map = json.load(f)
+    # labels = os.path.join(root_dir, 'labels.json')
+    # with open(labels, 'r', encoding='utf-8') as f:
+    #     label_map = json.load(f)
 
     train_dir = os.path.join(root_dir, 'train')
     test_dir = os.path.join(root_dir, 'test')
@@ -165,8 +104,8 @@ def prepare_dataset(root_dir: str, tgt_dir: str, extractor) -> None:
 
     (annotations_train, annotations_test) = get_annotations(root_dir)
 
-    preprocess_directory(train_dir, tgt_train_dir, annotations_train, label_map, extractor)
-    preprocess_directory(test_dir, tgt_test_dir, annotations_test, label_map, extractor)
+    preprocess_directory(train_dir, tgt_train_dir, annotations_train, None, extractor)
+    preprocess_directory(test_dir, tgt_test_dir, annotations_test, None, extractor)
 
 
 def inference(model):
@@ -192,8 +131,8 @@ def main():
     # preprocess_landmarks(root_dir, tgt_dir)
 
     ### PREPROCESSING .JPG FRAMES
-    root_dir = 'data/jester'
-    tgt_dir = 'data/jester_RTMP'
+    root_dir = 'F:/test/KSPJM'
+    tgt_dir = 'data/KSPJM_RTMP'
 
     ## Mediapipe
     # model = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
