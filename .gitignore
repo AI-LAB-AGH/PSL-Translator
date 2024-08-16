@@ -1,8 +1,6 @@
-# Datasets
-data/*/*/
-data/*/*.csv
+# Datasets and pretrained RTMPose
+data/
 preprocessing/landmark_extraction/end2end.onnx
-
 
 # Byte-compiled / optimized / DLL files
 *__pycache__/

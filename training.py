@@ -122,15 +122,19 @@ def train_forecaster(model: torch.nn.Module,
             optimizer.zero_grad()
             model.initialize_cell_and_hidden_state() 
             batch_loss = 0.0
+            loss = 0.0
             
-            for frame in range(len(inputs) - 1): 
+            for frame in range(len(inputs) - 1):
                 x = inputs[frame]
                 outputs = model(x)
                 outputs = outputs.view(outputs.shape[1] // 2, 2)
-                loss = criterion(outputs, inputs[frame+1][0].float())
+                temp = criterion(outputs, inputs[frame+1][0].float())
+                loss += temp
+                batch_loss += temp.item()
+
+            if type(loss) != float:
                 loss.backward()
                 optimizer.step()
-                batch_loss += loss.item()
                 
             running_loss += batch_loss / (len(inputs) - 1)
             print(f'\rEpoch {epoch+1}/{num_epochs}, Batch {i+1}/{len(train_loader)} complete', end='')
@@ -147,7 +151,8 @@ def train_forecaster(model: torch.nn.Module,
                 for frame in range(len(inputs)-1):
                     x = inputs[frame]
                     outputs = model(x)
-                    mse = criterion(outputs, inputs[frame + 1])
+                    outputs = outputs.view(outputs.shape[1] // 2, 2)
+                    mse = criterion(outputs, inputs[frame+1][0].float())
                     mse_values.append(mse.item())
         
         avg_mse = sum(mse_values) / len(mse_values)
@@ -175,9 +180,9 @@ def train_forecaster(model: torch.nn.Module,
             for frame in range(len(inputs)-1):
                 x = inputs[frame]
                 outputs = model(x)
-            
-            mse = criterion(outputs, inputs[frame + 1])
-            mse_values.append(mse.item())
+                outputs = outputs.view(outputs.shape[1] // 2, 2)
+                mse = criterion(outputs, inputs[frame+1][0].float())
+                mse_values.append(mse.item())
 
     avg_mse = sum(mse_values) / len(mse_values)
     #TODO: Add visualization of MSE

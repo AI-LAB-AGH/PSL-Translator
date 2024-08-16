@@ -2,6 +2,7 @@ import os
 import cv2
 import json
 import torch
+import random
 import argparse
 import numpy as np
 from torch.utils.data import DataLoader
@@ -13,6 +14,25 @@ from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
 from training import train, train_forecaster, display_results
 from preprocessing.transforms import ExtractLandmarksWithRTMP, ExtractOpticalFlow
 from preprocessing.datasets import JesterDataset, RTMPDataset, OFDataset
+
+
+def separate_sample(model, test_loader, threshold=0.001):
+    mse = torch.nn.MSELoss()
+    model.initialize_cell_and_hidden_state()
+    idx = random.randint(0, len(test_loader)-1)
+    sample, _ = test_loader[idx]
+
+    print(f'Sample index: {idx}. Cuts at:', end=' ')
+
+    for frame in range(len(sample)-1):
+        x = torch.tensor(sample[frame], dtype=torch.float32)
+        x = x.view(1, 133, 2)
+        outputs = model(x)
+        outputs = outputs.view(outputs.shape[1] // 2, 2)
+        tgt = torch.tensor(sample[frame+1], dtype=torch.float32)
+        loss = mse(outputs, tgt)
+        if loss.item() > threshold:
+            print(frame+1, end=', ')
 
 
 def draw_landmarks(img, landmarks):
@@ -187,6 +207,7 @@ def main():
     annotations_test = 'data/'+dataset+'/annotations_test.csv'
     labels = 'data/'+dataset+'/labels.json'
     label_map = None
+    actions = None
     if os.path.isfile(labels):
         with open(labels, 'r', encoding='utf-8') as f:
             label_map = json.load(f)
@@ -269,8 +290,11 @@ def main():
             results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         display_results(results, actions)
     
+    loader = RTMPDataset(root_dir_test)
     if model_type == 'ConvLSTM':
         run_real_time_inference_optical_flow(model, actions, transform=ExtractOpticalFlow())
+    elif model_type == 'Forecaster':
+        separate_sample(model, loader)
     else:
         run_real_time_inference(model, actions, transform)
 
