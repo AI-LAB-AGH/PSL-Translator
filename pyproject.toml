@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "psl-translator"
+version = "0.1.0"
+description = ""
+authors = ["AI Lab"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+mediapipe = "0.10.14"
+torch = "2.3.1"
+torchvision = "0.18.1"
+numpy = "1.26.4"
+pandas = "2.2.2"
+keyboard = "0.13.5"
+seaborn = "0.13.2"
+scikit-learn = "1.5.1"
+scikit-image = "0.24.0"
+dvc = "^3.51.3"
+dvc-gdrive = "^3.0.1"
+jupyter = "^1.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pyarrow = "^17.0.0"
+fastparquet = "^2024.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

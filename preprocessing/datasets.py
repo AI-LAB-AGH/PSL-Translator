@@ -77,13 +77,10 @@ class JesterDataset(Dataset):
 
         return sample, label
 
-class ProcessedDataset(Dataset):
+class RTMPDataset(Dataset):
     def __init__(self, root_dir: str, transform=None, target_transform=None):
         self.filepath = os.path.join(root_dir, 'data.pth')
         self.data = torch.load(self.filepath)
-        # computer = ComputeDistances()
-        # for (label, sample) in self.data:
-        #     sample = computer(sample)
 
     def __len__(self):
         return len(self.data)
