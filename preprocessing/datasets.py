@@ -4,7 +4,7 @@ import torch
 import numpy as np
 from skimage import io
 from torch.utils.data import Dataset
-from preprocessing.transforms import ComputeDistances
+#from preprocessing.transforms import ComputeDistances
 
 
 class LandmarksDataset(Dataset):
@@ -96,17 +96,26 @@ class OFDataset(Dataset):
         self.batch_size = 5
         self.curr_first = 0
         self.root_dir = root_dir
+        self.num_samples = self.count_samples()
         self.load_data(0)
 
     def __len__(self):
-        return len(self.data)
+        return self.num_samples
 
     def __getitem__(self, idx):
-        (label, sample) = self.data[idx]
+        if idx in range(self.curr_first, self.curr_first + self.batch_size):
+            (label, sample) = self.data[idx - self.curr_first]
+        else:
+            self.load_data(idx - (idx % self.batch_size))
+            (label, sample) = self.data[idx - self.curr_first]
         return sample, label
 
     def load_data(self, first_idx):
         self.data = torch.load(os.path.join(self.root_dir, f'data_{first_idx}_{first_idx + self.batch_size - 1}.pth'))
+        self.curr_first = first_idx
     
     def count_samples(self):
-        pass
+        return max(int(filename[:-4].split('_')[2]) for filename in os.listdir(self.root_dir)) # Proud of this one-liner, ngl
+
+# ofds = OFDataset(os.path.join('data', 'RGB_OF', 'train'))
+# ofds.count_samples()
