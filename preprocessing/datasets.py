@@ -111,11 +111,15 @@ class OFDataset(Dataset):
         return sample, label
 
     def load_data(self, first_idx):
-        self.data = torch.load(os.path.join(self.root_dir, f'data_{first_idx}_{first_idx + self.batch_size - 1}.pth'))
+        if first_idx + self.batch_size > self.num_samples:
+            filename = f'data_{first_idx}_{self.num_samples - 1}.pth'
+        else:
+            filename = f'data_{first_idx}_{first_idx + self.batch_size - 1}.pth'
+        self.data = torch.load(os.path.join(self.root_dir, filename))
         self.curr_first = first_idx
     
     def count_samples(self):
-        return max(int(filename[:-4].split('_')[2]) for filename in os.listdir(self.root_dir)) # Proud of this one-liner, ngl
+        return max(int(filename[:-4].split('_')[2]) for filename in os.listdir(self.root_dir)) + 1 # Proud of this one-liner, ngl
 
 # ofds = OFDataset(os.path.join('data', 'RGB_OF', 'train'))
 # ofds.count_samples()

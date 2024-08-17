@@ -224,7 +224,10 @@ def main():
     num_epochs = args.num_epochs
     batch_size = args.batch_size
     lr = args.lr
-    criterion = torch.nn.MSELoss
+    if model_type == 'Forecaster':
+        criterion = torch.nn.MSELoss
+    else:
+        criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
     if model_type == 'LSTM' or model_type == 'Forecaster':
         transform = ExtractLandmarksWithRTMP(extractor)
