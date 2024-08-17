@@ -193,3 +193,29 @@ class ConvLSTM(nn.Module):
         if not isinstance(param, list):
             param = [param] * num_layers
         return param
+
+
+class ConvLSTMClassifier(nn.Module):
+    def __init__(self, input_dim, hidden_dim, kernel_size, num_classes, num_layers=1):
+        super(ConvLSTMClassifier, self).__init__()
+        self.convLSTM = ConvLSTM(input_dim=input_dim,
+                                 hidden_dim=hidden_dim,
+                                 kernel_size=kernel_size,
+                                 num_layers=num_layers,
+                                 batch_first=True,
+                                 bias=True,
+                                 return_all_layers=False)
+        self.fc = nn.Linear(hidden_dim * 480 * 640, num_classes)
+
+    def forward(self, x):
+        # Encode
+        _, last_states = self.convLSTM(x)
+
+        last_state = last_states[-1][0]
+
+        x = last_state.view(last_state.size(0), -1)
+
+        # Decode
+        x = self.fc(x)
+        return x
+    

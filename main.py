@@ -248,7 +248,7 @@ def main():
             model = LSTMModel(input_shape[1], hidden_size, num_layers, num_classes)
 
         case 'ConvLSTM':
-            model = ConvLSTM(input_dim=2, hidden_dim=hidden_size, num_layers=num_layers, kernel_size=(3, 3))
+            model = ConvLSTM(input_dim=2, hidden_dim=hidden_size, num_layers=num_layers, kernel_size=(3, 3), batch_first=True)
 
         case 'Forecaster':
             model = LSTMModel(input_shape[1], hidden_size, num_layers, input_shape[1] - 42 * 2)

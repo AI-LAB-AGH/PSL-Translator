@@ -124,7 +124,6 @@ def train_OF(model: torch.nn.Module,
             model._init_hidden(1, (480, 640))
             while outputs is None:
                 x = torch.stack(inputs, dim=1)
-                x = torch.permute(x, (1, 0, 2, 3, 4))
                 print(x.shape)
                 outputs = model(x)
 
