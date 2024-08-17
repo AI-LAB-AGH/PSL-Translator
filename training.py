@@ -185,40 +185,67 @@ def train_forecaster(model: torch.nn.Module,
                 mse_values.append(mse.item())
 
     avg_mse = sum(mse_values) / len(mse_values)
-    #TODO: Add visualization of MSE
     return {'history': history, 'avg_mse': avg_mse}
 
-def display_results(results: dict, actions):
+def display_results(results: dict, actions=None):
     history = results['history']
-    accuracy = results['accuracy']
-    cm = results['cm']
+    
+    if 'accuracy' in results:
+        accuracy = results['accuracy']
+        cm = results['cm']
 
-    print(f'Accuracy: {accuracy}')
-    plt.figure(figsize=(10, 7))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=actions, yticklabels=actions)
-    plt.title('Confusion Matrix')
-    plt.ylabel('True Label')
-    plt.xlabel('Predicted Label')
-    plt.show()
+        print(f'Accuracy: {accuracy}')
+        plt.figure(figsize=(10, 7))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=actions, yticklabels=actions)
+        plt.title('Confusion Matrix')
+        plt.ylabel('True Label')
+        plt.xlabel('Predicted Label')
+        plt.show()
 
-    epochs = history['epoch']
-    loss = history['loss']
-    accuracy = history['accuracy']
+        epochs = history['epoch']
+        loss = history['loss']
+        accuracy = history['accuracy']
 
-    plt.figure(figsize=(12, 5))
+        plt.figure(figsize=(12, 5))
 
-    plt.subplot(1, 2, 1)
-    plt.plot(epochs, loss, label='Training Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.title('Training Loss over Epochs')
-    plt.legend()
+        plt.subplot(1, 2, 1)
+        plt.plot(epochs, loss, label='Training Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.title('Training Loss over Epochs')
+        plt.legend()
 
-    plt.subplot(1, 2, 2)
-    plt.plot(epochs, accuracy, label='Training Accuracy')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.title('Training Accuracy over Epochs')
-    plt.legend()
+        plt.subplot(1, 2, 2)
+        plt.plot(epochs, accuracy, label='Training Accuracy')
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+        plt.title('Training Accuracy over Epochs')
+        plt.legend()
 
-    plt.show()
+        plt.show()
+    elif 'mse' in history:
+        avg_mse = results['avg_mse']
+        print(f'Average MSE: {avg_mse}')
+
+        epochs = history['epoch']
+        loss = history['loss']
+        mse = history['mse']
+
+        plt.figure(figsize=(12, 5))
+
+        plt.subplot(1, 2, 1)
+        plt.plot(epochs, loss, label='Training Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.title('Training Loss over Epochs')
+        plt.legend()
+
+        plt.subplot(1, 2, 2)
+        plt.plot(epochs, mse, label='Validation MSE')
+        plt.xlabel('Epochs')
+        plt.ylabel('MSE')
+        plt.title('Validation MSE over Epochs')
+        plt.legend()
+
+        plt.show()
+    
