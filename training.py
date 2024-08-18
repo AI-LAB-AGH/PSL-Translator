@@ -4,6 +4,7 @@ import random
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, confusion_matrix
+from tqdm import tqdm
 
 def train(model: torch.nn.Module,
           train_loader: torch.utils.data.DataLoader,
@@ -115,7 +116,7 @@ def train_OF(model: torch.nn.Module,
     for epoch in range(num_epochs):
         model.train()
         running_loss = 0.0
-        for i, data in enumerate(train_loader):
+        for i, data in tqdm(enumerate(train_loader), total=len(train_loader)):
             # Input dims: N x L x IN
             inputs, labels = data
 
@@ -124,14 +125,14 @@ def train_OF(model: torch.nn.Module,
             model._init_hidden(1, (480, 640))
             while outputs is None:
                 x = torch.stack(inputs, dim=1)
-                print(x.shape)
+                x = torch.permute(x, (0, 1, 4, 2, 3))
                 outputs = model(x)
 
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-            print(f'\rEpoch {epoch+1}/{num_epochs}, Batch {i+1}/{len(train_loader)} complete', end='')
+            #print(f'\rEpoch {epoch+1}/{num_epochs}, Batch {i+1}/{len(train_loader)} complete', end='')
 
         model.eval()
         all_preds = []
@@ -143,8 +144,9 @@ def train_OF(model: torch.nn.Module,
                 optimizer.zero_grad()
                 outputs = None
                 model._init_hidden(1, (480, 640))
-                for frame in range(len(inputs)):
-                    x = inputs[frame]
+                while outputs is None:
+                    x = torch.stack(inputs, dim=1)
+                    x = torch.permute(x, (0, 1, 4, 2, 3))
                     outputs = model(x)
 
                 _, preds = torch.max(outputs, 1)

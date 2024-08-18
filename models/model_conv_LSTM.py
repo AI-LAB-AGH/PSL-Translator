@@ -96,6 +96,7 @@ class ConvLSTM(nn.Module):
         # Make sure that both `kernel_size` and `hidden_dim` are lists having len == num_layers
         kernel_size = self._extend_for_multilayer(kernel_size, num_layers)
         hidden_dim = self._extend_for_multilayer(hidden_dim, num_layers)
+        
         if not len(kernel_size) == len(hidden_dim) == num_layers:
             raise ValueError('Inconsistent list length.')
 
@@ -170,10 +171,7 @@ class ConvLSTM(nn.Module):
         if not self.return_all_layers:
             layer_output_list = layer_output_list[-1:]
             last_state_list = last_state_list[-1:]
-
-        print(layer_output_list.shape)
-        print(last_state_list.shape)
-
+            
         return layer_output_list, last_state_list
 
     def _init_hidden(self, batch_size, image_size):
@@ -219,3 +217,5 @@ class ConvLSTMClassifier(nn.Module):
         x = self.fc(x)
         return x
     
+    def _init_hidden(self, batch_size, image_size):
+        self.convLSTM._init_hidden(batch_size, image_size)

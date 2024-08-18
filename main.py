@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 
 from models.model_transformer import TransformerModel
 from models.model_LSTM import LSTMModel
-from models.model_conv_LSTM import ConvLSTM
+from models.model_conv_LSTM import ConvLSTMClassifier
 from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
 from training import train, train_forecaster, display_results, train_OF
 from preprocessing.transforms import ExtractLandmarksWithRTMP, ExtractOpticalFlow
@@ -248,7 +248,7 @@ def main():
             model = LSTMModel(input_shape[1], hidden_size, num_layers, num_classes)
 
         case 'ConvLSTM':
-            model = ConvLSTM(input_dim=2, hidden_dim=hidden_size, num_layers=num_layers, kernel_size=(3, 3), batch_first=True)
+            model = ConvLSTMClassifier(input_dim=2, hidden_dim=hidden_size, num_layers=num_layers, kernel_size=(3, 3), num_classes=num_classes)
 
         case 'Forecaster':
             model = LSTMModel(input_shape[1], hidden_size, num_layers, input_shape[1] - 42 * 2)
