@@ -93,17 +93,17 @@ class RTMPDataset(Dataset):
 class OFDataset(Dataset):
     def __init__(self, root_dir: str):
         self.data = None
-        self.batch_size = 5
         self.curr_first = 0
         self.root_dir = root_dir
         self.num_samples = self.count_samples()
+        self.batch_size = min(100, self.num_samples)
         self.load_data(0)
 
     def __len__(self):
         return self.num_samples
 
     def __getitem__(self, idx):
-        if idx in range(self.curr_first, self.curr_first + self.batch_size):
+        if self.curr_first <= idx < self.curr_first + self.batch_size:
             (label, sample) = self.data[idx - self.curr_first]
         else:
             self.load_data(idx - (idx % self.batch_size))
