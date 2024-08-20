@@ -103,7 +103,7 @@ class OFDataset(Dataset):
         return self.num_samples
 
     def __getitem__(self, idx):
-        if idx in range(self.curr_first, self.curr_first + self.batch_size):
+        if self.curr_first <= idx < self.curr_first + self.batch_size:
             (label, sample) = self.data[idx - self.curr_first]
         else:
             self.load_data(idx - (idx % self.batch_size))
