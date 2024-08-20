@@ -93,10 +93,10 @@ class RTMPDataset(Dataset):
 class OFDataset(Dataset):
     def __init__(self, root_dir: str):
         self.data = None
-        self.batch_size = 5
         self.curr_first = 0
         self.root_dir = root_dir
         self.num_samples = self.count_samples()
+        self.batch_size = min(100, self.num_samples)
         self.load_data(0)
 
     def __len__(self):
