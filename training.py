@@ -133,7 +133,6 @@ def train_OF(model: torch.nn.Module,
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-            #print(f'\rEpoch {epoch+1}/{num_epochs}, Batch {i+1}/{len(train_loader)} complete', end='')
 
         model.eval()
         all_preds = []
