@@ -15,6 +15,7 @@ from training import train, train_forecaster, display_results, train_OF
 from preprocessing.transforms import ExtractLandmarksWithRTMP, ExtractOpticalFlow
 from preprocessing.datasets import JesterDataset, RTMPDataset, OFDataset
 
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def separate_sample(model, test_loader, threshold=0.001):
     mse = torch.nn.MSELoss()
@@ -121,7 +122,7 @@ def run_real_time_inference_optical_flow(model, actions, transform):
         print("Cannot access camera.")
         exit()
 
-    model.initialize_cell_and_hidden_state()
+    model._init_hidden(1, (480, 640))
     action_text = ""
 
     # Grab first frame so that there are 2 of them to process at the first inference step
@@ -147,7 +148,9 @@ def run_real_time_inference_optical_flow(model, actions, transform):
         curr = img
 
         # Extract optical flow
-        flow = transform(prev, curr)
+        flow = transform(prev, curr).to(device)
+        flow = flow[None, :]
+        flow = torch.permute(flow, (0, 1, 4, 2, 3))
 
         # Pass input through network
         output = model(flow)

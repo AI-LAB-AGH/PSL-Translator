@@ -108,6 +108,7 @@ def train_OF(model: torch.nn.Module,
           save_path=None) -> dict:
     
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    print(device)
     model.to(device)
     criterion = crit()
     optimizer = optim(model.parameters(), lr)
@@ -126,9 +127,9 @@ def train_OF(model: torch.nn.Module,
             while outputs is None:
                 x = torch.stack(inputs, dim=1)
                 x = torch.permute(x, (0, 1, 4, 2, 3))
-                outputs = model(x)
+                outputs = model(x.to(device))
 
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs, labels.to(device))
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
@@ -147,7 +148,7 @@ def train_OF(model: torch.nn.Module,
                 while outputs is None:
                     x = torch.stack(inputs, dim=1)
                     x = torch.permute(x, (0, 1, 4, 2, 3))
-                    outputs = model(x)
+                    outputs = model(x.to(device))
 
                 _, preds = torch.max(outputs, 1)
                 all_preds.extend(preds.cpu().numpy())
@@ -175,10 +176,11 @@ def train_OF(model: torch.nn.Module,
 
             optimizer.zero_grad()
             outputs = None
-            model.initialize_cell_and_hidden_state()
-            for frame in range(len(inputs)):
-                x = inputs[frame]
-                outputs = model(x)
+            model._init_hidden(1, (480, 640))
+            while outputs is None:
+                x = torch.stack(inputs, dim=1)
+                x = torch.permute(x, (0, 1, 4, 2, 3))
+                outputs = model(x.to(device))
             
             _, preds = torch.max(outputs, 1)
             all_preds.extend(preds.cpu().numpy())
