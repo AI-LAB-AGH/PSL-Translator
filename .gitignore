@@ -3,6 +3,9 @@ data/*/*/
 data/*/*.csv
 data/*/*.json
 
+# GPT api key
+data/translation/data_generation/api_key.py
+
 # Byte-compiled / optimized / DLL files
 *__pycache__/
 *.py[cod]
