@@ -290,7 +290,8 @@ def main():
             results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         display_results(results, actions)
     
-    loader = RTMPDataset(root_dir_test)
+    if model_type == 'LSTM':
+        loader = RTMPDataset(root_dir_test)
     if model_type == 'ConvLSTM':
         run_real_time_inference_optical_flow(model, actions, transform=ExtractOpticalFlow())
     elif model_type == 'Forecaster':
