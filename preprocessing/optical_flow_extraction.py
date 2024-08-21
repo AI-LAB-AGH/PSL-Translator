@@ -8,7 +8,7 @@ import argparse
 from skimage import io
 from typing import Any
 
-def extract_optical_flow(frames: list[np.ndarray]) -> list[np.ndarray]:
+def extract_optical_flow_farneback(frames: list[np.ndarray]) -> list[np.ndarray]:
     flow = []
     for i in range(1, len(frames)):
         img1 = frames[i-1]
@@ -29,7 +29,7 @@ def process_data(root_dir: str, target_dir: str, batch_size: int, annotations: d
         frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
         sample = [io.imread(os.path.join(path, frame)) for frame in frames]
         label = label_map[annotations[dir]]
-        flow = extract_optical_flow(sample)
+        flow = extract_optical_flow_farneback(sample)
         data.append((label, flow))
         print(f'\rDirectory {i+1}/{total} processed', end='')
         if (i + 1) % batch_size == 0 or i + 1 == total:
