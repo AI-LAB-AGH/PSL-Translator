@@ -1,11 +1,8 @@
 import os
 import csv
-import cv2
 import json
+import cv2
 import torch
-import numpy as np
-import mediapipe as mp
-from skimage import io
 from rtmpose import RTMPoseDetector
 
 
@@ -28,29 +25,6 @@ def extract_landmarks_with_RTMP(model, sample):
         landmarks.append(result)
 
     return landmarks
-
-
-def extract_landmarks_with_MP(holistic, sample):
-    left = []
-    right = []
-
-    for frame in sample:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = holistic.process(frame)
-
-        keypoints = torch.tensor(np.array([]))
-        if results.left_hand_landmarks is not None:
-            keypoints = torch.tensor(np.array([[l.x, l.y] for l in results.left_hand_landmarks.landmark]), dtype=torch.float32)
-            keypoints = keypoints.view(21 * 2)
-        left.append(keypoints)
-        
-        keypoints = torch.tensor(np.array([]))
-        if results.right_hand_landmarks is not None:
-            keypoints = torch.tensor(np.array([[l.x, l.y] for l in results.right_hand_landmarks.landmark]), dtype=torch.float32)
-            keypoints = keypoints.view(21 * 2)
-        right.append(keypoints)
-
-    return (left, right)
 
 
 def get_annotations(root_dir: str) -> tuple[dict, dict]:
@@ -93,9 +67,9 @@ def preprocess_directory(root_dir: str, tgt_dir: str, annotations: dict, label_m
 
 
 def prepare_dataset(root_dir: str, tgt_dir: str, extractor) -> None:
-    # labels = os.path.join(root_dir, 'labels.json')
-    # with open(labels, 'r', encoding='utf-8') as f:
-    #     label_map = json.load(f)
+    labels = os.path.join(root_dir, 'labels.json')
+    with open(labels, 'r', encoding='utf-8') as f:
+        label_map = json.load(f)
 
     train_dir = os.path.join(root_dir, 'train')
     test_dir = os.path.join(root_dir, 'test')
@@ -104,24 +78,8 @@ def prepare_dataset(root_dir: str, tgt_dir: str, extractor) -> None:
 
     (annotations_train, annotations_test) = get_annotations(root_dir)
 
-    preprocess_directory(train_dir, tgt_train_dir, annotations_train, None, extractor)
-    preprocess_directory(test_dir, tgt_test_dir, annotations_test, None, extractor)
-
-
-def inference(model):
-    cap = cv2.VideoCapture(0)
-    while cap.isOpened():
-        success, img = cap.read()
-        a = model(img)
-        cv2.imshow('Camera', img)
-
-        if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
-            cap.release()
-            cv2.destroyAllWindows()
-            return   
-                
-    cap.release()
-    cv2.destroyAllWindows()
+    # preprocess_directory(train_dir, tgt_train_dir, annotations_train, label_map, extractor)
+    preprocess_directory(test_dir, tgt_test_dir, annotations_test, label_map, extractor)
 
 
 def main():
@@ -131,8 +89,8 @@ def main():
     # preprocess_landmarks(root_dir, tgt_dir)
 
     ### PREPROCESSING .JPG FRAMES
-    root_dir = 'F:/test/KSPJM'
-    tgt_dir = 'data/KSPJM_RTMP'
+    root_dir = 'data/RGB'
+    tgt_dir = 'data/RGB_RTMP'
 
     ## Mediapipe
     # model = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
