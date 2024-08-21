@@ -88,8 +88,9 @@ class PseudoLSTMModel(nn.Module):
         self.c = None
 
     def initialize_cell_and_hidden_state(self) -> None:
-        self.h = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial hidden state
-        self.c = torch.zeros([self.num_layers, 1, self.hidden_size])  # Initial cell state
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        self.h = torch.zeros([self.num_layers, 1, self.hidden_size]).to(device)  # Initial hidden state
+        self.c = torch.zeros([self.num_layers, 1, self.hidden_size]).to(device)  # Initial cell state
 
     def forward(self, x: torch.tensor) -> torch.tensor:
         """

@@ -45,10 +45,10 @@ class ConvModule(nn.Module):
 
 
 class ConvLSTM(nn.Module):
-    def __init__(self, hidden_size, num_layers, num_classes):
+    def __init__(self, hidden_size, num_layers, num_classes, device):
         super(ConvLSTM, self).__init__()
-        self.conv = ConvModule()
-        self.LSTM = PseudoLSTMModel(input_size=2400, hidden_size=hidden_size, num_layers=num_layers, num_classes=num_classes)
+        self.conv = ConvModule().to(device)
+        self.LSTM = PseudoLSTMModel(input_size=2400, hidden_size=hidden_size, num_layers=num_layers, num_classes=num_classes).to(device)
     
     def initialize_cell_and_hidden_state(self):
         self.LSTM.initialize_cell_and_hidden_state()

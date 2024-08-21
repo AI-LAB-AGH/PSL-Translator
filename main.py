@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 from models.model_transformer import TransformerModel
 from models.model_LSTM import LSTMModel
 from models.model_conv_LSTM import ConvLSTMClassifier
+from models.model_pseudo_conv_LSTM import ConvLSTM
 from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
 from training import train, train_forecaster, display_results, train_OF
 from preprocessing.transforms import ExtractLandmarksWithRTMP, ExtractOpticalFlow
@@ -251,7 +252,8 @@ def main():
             model = LSTMModel(input_shape[1], hidden_size, num_layers, num_classes)
 
         case 'ConvLSTM':
-            model = ConvLSTMClassifier(input_dim=2, hidden_dim=hidden_size, num_layers=num_layers, kernel_size=(3, 3), num_classes=num_classes)
+            model = ConvLSTM(hidden_size=hidden_size, num_layers=num_layers, num_classes=num_classes, device=device)
+            #model = ConvLSTMClassifier(input_dim=2, hidden_dim=hidden_size, num_layers=num_layers, kernel_size=(3, 3), num_classes=num_classes)
 
         case 'Forecaster':
             model = LSTMModel(input_shape[1], hidden_size, num_layers, input_shape[1] - 42 * 2)
@@ -293,7 +295,8 @@ def main():
         if model_type == 'Forecaster':
             results = train_forecaster(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         elif model_type == 'ConvLSTM':
-            results = train_OF(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
+            results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
+            #results = train_OF(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         else:
             results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         display_results(results, actions)

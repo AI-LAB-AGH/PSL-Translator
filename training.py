@@ -36,9 +36,9 @@ def train(model: torch.nn.Module,
                     skip = random.randint(0, 3)
                     if not skip:
                         x = inputs[frame]
-                        outputs = model(x)
+                        outputs = model(x.to(device))
 
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs, labels.to(device))
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
@@ -56,7 +56,7 @@ def train(model: torch.nn.Module,
                 model.initialize_cell_and_hidden_state()
                 for frame in range(len(inputs)):
                     x = inputs[frame]
-                    outputs = model(x)
+                    outputs = model(x.to(device))
 
                 _, preds = torch.max(outputs, 1)
                 all_preds.extend(preds.cpu().numpy())
@@ -87,7 +87,7 @@ def train(model: torch.nn.Module,
             model.initialize_cell_and_hidden_state()
             for frame in range(len(inputs)):
                 x = inputs[frame]
-                outputs = model(x)
+                outputs = model(x.to(device))
             
             _, preds = torch.max(outputs, 1)
             all_preds.extend(preds.cpu().numpy())
