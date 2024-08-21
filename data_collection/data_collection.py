@@ -1,5 +1,4 @@
 import numpy as np
-# import keyboard
 from pynput import keyboard
 
 from helpers import *
@@ -68,8 +67,6 @@ def main():
     sequences = 100  # max number of samples to record
     frames = 100  # max number of frames per sample
 
-    #controller = keyboard.Controller()
-
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("Cannot access camera.")
@@ -86,15 +83,16 @@ def main():
         listener.start()
 
         for sequence in range(sequences):
-            #print(f'space {space_pressed}, right {right_arrow_pressed}, left {left_arrow_pressed}')
             while not space_pressed:
                 image = draw_landmarks(cap, holistic)
                 add_window_text(image, action)
                 cv2.imshow('Camera', image)
+
                 if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
                     cap.release()
                     cv2.destroyAllWindows()
                     return
+                
                 if right_arrow_pressed:
                     if action_idx < len(actions) - 1:
                         action_idx += 1
@@ -102,6 +100,7 @@ def main():
                         action_idx = 0
                     action = actions[action_idx]
                     cv2.waitKey(100)
+
                 if left_arrow_pressed:
                     if action_idx > 0:
                         action_idx -= 1
@@ -109,6 +108,7 @@ def main():
                         action_idx = len(actions) - 1
                     action = actions[action_idx]
                     cv2.waitKey(100)
+
             if n_samples % 5 == 0:
                 create_directory(f'test/{n_samples}')
                 subset = 'test'
@@ -130,7 +130,7 @@ def main():
                 cv2.imshow('Camera', image)
 
                 # cv2.waitKey essentially serves as a sleep function here, it causes a slight delay
-                if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
+                if cv2.waitKey(1) == 113:  # q to stop recording
                     break
 
             annotate_sample(n_samples, action, subset)
@@ -139,7 +139,6 @@ def main():
                 break
 
             n_samples += 1
-            #listener.stop()
 
     cap.release()
     cv2.destroyAllWindows()

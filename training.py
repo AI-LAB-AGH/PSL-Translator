@@ -31,7 +31,8 @@ def train(model: torch.nn.Module,
             outputs = None
             model.initialize_cell_and_hidden_state()
             while outputs is None:
-                for frame in range(len(inputs)):
+                cut = int(len(inputs) * 0.1)
+                for frame in range(cut, len(inputs) - cut):
                     skip = random.randint(0, 3)
                     if not skip:
                         x = inputs[frame]
@@ -128,7 +129,8 @@ def train_forecaster(model: torch.nn.Module,
                 x = inputs[frame]
                 outputs = model(x)
                 outputs = outputs.view(outputs.shape[1] // 2, 2)
-                temp = criterion(outputs, inputs[frame+1][0].float())
+                tgt = inputs[frame+1][0].float()
+                temp = criterion(outputs, tgt)
                 loss += temp
                 batch_loss += temp.item()
 
@@ -186,6 +188,7 @@ def train_forecaster(model: torch.nn.Module,
 
     avg_mse = sum(mse_values) / len(mse_values)
     return {'history': history, 'avg_mse': avg_mse}
+
 
 def display_results(results: dict, actions=None):
     history = results['history']

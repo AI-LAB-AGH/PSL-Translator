@@ -10,7 +10,7 @@ so as to not to clutter data_collection.py too much.
 """
 
 
-PATH = os.path.join('data', 'RGB_debug')
+PATH = os.path.join('data', 'RGB')
 
 def count_samples() -> int:
     train_dirs = os.listdir(os.path.join(PATH, 'train'))
@@ -47,13 +47,13 @@ def draw_landmarks(cap, holistic) -> cv2.UMat:
     # the following lines are apparently necessary for landmark drawing to work
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image.flags.writeable = False
-    results = holistic.process(image)
+    # results = holistic.process(image)
     image.flags.writeable = True
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    mp.solutions.drawing_utils.draw_landmarks(image, results.left_hand_landmarks,
-                                              mp.solutions.holistic.HAND_CONNECTIONS)
-    mp.solutions.drawing_utils.draw_landmarks(image, results.right_hand_landmarks,
-                                              mp.solutions.holistic.HAND_CONNECTIONS)
+    # mp.solutions.drawing_utils.draw_landmarks(image, results.left_hand_landmarks,
+                                            #   mp.solutions.holistic.HAND_CONNECTIONS)
+    # mp.solutions.drawing_utils.draw_landmarks(image, results.right_hand_landmarks,
+                                            #   mp.solutions.holistic.HAND_CONNECTIONS)
     return image
 
 
