@@ -123,7 +123,7 @@ def run_real_time_inference_optical_flow(model, actions, transform):
         print("Cannot access camera.")
         exit()
 
-    model._init_hidden(1, (480, 640))
+    model.initialize_cell_and_hidden_state()
     action_text = ""
 
     # Grab first frame so that there are 2 of them to process at the first inference step
@@ -149,12 +149,10 @@ def run_real_time_inference_optical_flow(model, actions, transform):
         curr = img
 
         # Extract optical flow
-        flow = transform(prev, curr).to(device)
-        flow = flow[None, :]
-        flow = torch.permute(flow, (0, 1, 4, 2, 3))
+        flow = transform(prev, curr)
 
         # Pass input through network
-        output = model(flow)
+        output = model(flow.to(device))
         output[0] = torch.nn.functional.softmax(output[0])
         confidence, predicted_index = torch.max(output, dim=1)
         predicted_action = actions[predicted_index.item()]
@@ -178,6 +176,69 @@ def run_real_time_inference_optical_flow(model, actions, transform):
 
     cap.release()
     cv2.destroyAllWindows()
+
+#
+# def run_real_time_inference_optical_flow(model, actions, transform):
+#     cap = cv2.VideoCapture(0)
+#     if not cap.isOpened():
+#         print("Cannot access camera.")
+#         exit()
+#
+#     model._init_hidden(1, (480, 640))
+#     action_text = ""
+#
+#     # Grab first frame so that there are 2 of them to process at the first inference step
+#     success, img = cap.read()
+#     if not success:
+#         print("Failed to capture image.")
+#         return False
+#     cv2.putText(img, action_text, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+#     cv2.imshow('Camera', img)
+#     cv2.waitKey(1)
+#
+#     prev = img
+#
+#     while True:
+#         # Grab current frame
+#         success, img = cap.read()
+#         if not success:
+#             print("Failed to capture image.")
+#             return False
+#         cv2.putText(img, action_text, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+#         cv2.imshow('Camera', img)
+#
+#         curr = img
+#
+#         # Extract optical flow
+#         flow = transform(prev, curr).to(device)
+#         flow = flow[None, :]
+#         flow = torch.permute(flow, (0, 1, 4, 2, 3))
+#
+#         # Pass input through network
+#         output = model(flow)
+#         output[0] = torch.nn.functional.softmax(output[0])
+#         confidence, predicted_index = torch.max(output, dim=1)
+#         predicted_action = actions[predicted_index.item()]
+#
+#         # Output the recognized action
+#         if confidence > 0.6:
+#             action_text = f'{predicted_action}'
+#             print('\r'+ ' ' * 100, end='')
+#             print(f'\rRecognized action: {predicted_action} with confidence: {confidence.item():.2f}', end='')
+#         else:
+#             print('\r'+ ' ' * 100, end='')
+#             print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
+#
+#         prev = curr
+#
+#         # Show image
+#         cv2.imshow('Camera', img)
+#         cv2.waitKey(1)
+#         if cv2.waitKey(1) & 0xFF == ord('q'):
+#             break
+#
+#     cap.release()
+#     cv2.destroyAllWindows()
 
 
 def get_args():
