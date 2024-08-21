@@ -10,7 +10,7 @@ so as to not to clutter data_collection.py too much.
 """
 
 
-PATH = os.path.join('data', 'RGB_debug')
+PATH = os.path.join('data', 'RGB_debug_old')
 
 def count_samples() -> int:
     train_dirs = os.listdir(os.path.join(PATH, 'train'))

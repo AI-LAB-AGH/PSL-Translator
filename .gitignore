@@ -179,3 +179,4 @@ notebooks*
 # preprocessing/test.py
 
 models/pretrained/ConvLSTM_RGB_OF.pth
+bfg*
