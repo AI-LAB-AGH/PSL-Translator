@@ -2,13 +2,14 @@ import torch.nn as nn
 import torch
 
 class Forecaster(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers):
+    def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(Forecaster, self).__init__()
+        self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = num_layers
 
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers)
-        self.fc = nn.Linear(hidden_size, input_size)
+        self.fc = nn.Linear(hidden_size, num_classes)
 
         self.h = self.c = None
 
@@ -32,13 +33,10 @@ class Forecaster(nn.Module):
 
         # Input dims: N x L x IN
         source_body = x[0][0][0].clone()
-        source_face = x[0][0][53].clone()
         source_left = x[0][0][100].clone()
         source_right = x[0][0][121].clone()
 
         body = x[0][0][:17]
-        feet = x[0][0][17:23]
-        face = x[0][0][23:91]
         left = x[0][0][91:112]
         right = x[0][0][112:]
         w_left = torch.max(left[:, 0]) - torch.min(left[:, 0])
@@ -46,10 +44,7 @@ class Forecaster(nn.Module):
         w_right = torch.max(right[:, 0]) - torch.min(right[:, 0])
         h_right = torch.max(right[:, 1]) - torch.min(right[:, 1])
 
-        chin2left = left - source_body
-        chin2right = right - source_body
         body -= source_body
-        face -= source_face
         left -= source_left
         right -= source_right
 
@@ -61,8 +56,8 @@ class Forecaster(nn.Module):
             right[:, 0] /= w_right
             right[:, 1] /= h_right
 
-        x = torch.concat([body, feet, face, left, right, chin2left, chin2right])
-        x = x.view(1, 1, (133 + 42) * 2)
+        x = torch.concat([body, left, right])
+        x = x.view(1, 1, self.input_size)
 
         return x
     
