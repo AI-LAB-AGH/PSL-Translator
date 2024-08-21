@@ -177,3 +177,5 @@ notebooks*
 
 # preprocessing/correlation.py
 # preprocessing/test.py
+
+models/pretrained/ConvLSTM_RGB_OF.pth
