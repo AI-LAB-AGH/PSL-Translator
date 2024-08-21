@@ -8,6 +8,9 @@ import PIL.Image
 import sys
 import torch
 import cv2 as cv
+from torchvision.models.optical_flow import raft_small, Raft_Small_Weights, raft_large, Raft_Large_Weights
+import torchvision.transforms.functional as F
+from torchvision.utils import flow_to_image
 
 try:
     import correlation # the custom cost volume layer
@@ -286,14 +289,17 @@ def estimate(tenOne, tenTwo):
         netNetwork = Network().cuda().eval()
     # end
 
+    tenOne = torch.permute(tenOne, (2, 0, 1))
+    tenTwo = torch.permute(tenTwo, (2, 0, 1))
+
     assert(tenOne.shape[1] == tenTwo.shape[1])
     assert(tenOne.shape[2] == tenTwo.shape[2])
 
     intWidth = tenOne.shape[2]
     intHeight = tenOne.shape[1]
 
-    assert(intWidth == 1024) # remember that there is no guarantee for correctness, comment this line out if you acknowledge this and want to continue
-    assert(intHeight == 436) # remember that there is no guarantee for correctness, comment this line out if you acknowledge this and want to continue
+    assert(intWidth == 640) # remember that there is no guarantee for correctness, comment this line out if you acknowledge this and want to continue
+    assert(intHeight == 480) # remember that there is no guarantee for correctness, comment this line out if you acknowledge this and want to continue
 
     tenPreprocessedOne = tenOne.cuda().view(1, 3, intHeight, intWidth)
     tenPreprocessedTwo = tenTwo.cuda().view(1, 3, intHeight, intWidth)
@@ -329,6 +335,7 @@ def estimate(tenOne, tenTwo):
 #     objOutput.close()
 
 def draw_flow(img, flow, step=16):
+    flow = np.transpose(flow, (1, 2, 0))
     h, w = img.shape[:2]
     y, x = np.mgrid[step/2:h:step, step/2:w:step].reshape(2, -1).astype(int)
     fx, fy = flow[y, x].T
@@ -336,17 +343,17 @@ def draw_flow(img, flow, step=16):
     lines = np.vstack([x, y, x-fx, y-fy]).T.reshape(-1, 2, 2)
     lines = np.int32(lines + 0.5)
 
-    img_bgr = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
-    cv.polylines(img_bgr, lines, 0, (0, 255, 0))
+    #img_bgr = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
+    cv.polylines(img, lines, 0, (0, 255, 0))
 
     for (x1, y1), (x2, y2) in lines:
-        cv.circle(img_bgr, (x1, y1), 1, (0, 255, 0), -1)
+        cv.circle(img, (x1, y1), 1, (0, 255, 0), -1)
     
-    return img_bgr
+    return img
 
 def draw_hsv(flow):
-    h, w = flow.shape[:2]
-    fx, fy = flow[:, :, 0], flow[:, :, 1]
+    h, w = flow.shape[1:]
+    fx, fy = flow[0, :, :], flow[1, :, :]
 
     angle = np.arctan2(fy, fx) + np.pi
     v = np.sqrt(fx*fx + fy*fy)
@@ -360,24 +367,88 @@ def draw_hsv(flow):
     return bgr
 
 
+
+
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+#weights = Raft_Small_Weights.C_T_V1
+weights = Raft_Large_Weights.C_T_V1
+transforms = weights.transforms()
+model = raft_large(weights=weights).to(device)
+
+model.eval()
+
+def preprocess(img1_batch, img2_batch):
+    img1_batch = F.resize(img1_batch, size=[480, 640], antialias=False)
+    img2_batch = F.resize(img2_batch, size=[480, 640], antialias=False)
+    return transforms(img1_batch, img2_batch)
+
 cap = cv.VideoCapture(0)
 
 suc, prev = cap.read()
 
-prevgray = cv.cvtColor(prev, cv.COLOR_BGR2GRAY)
+#prevgray = cv.cvtColor(prev, cv.COLOR_BGR2GRAY)
 
 while True:
     suc, img = cap.read()
-    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    #gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    prev_tensor = torch.FloatTensor(prev)
+    img_tensor = torch.FloatTensor(img)
+    prev_tensor = torch.permute(prev_tensor, (2, 0, 1))
+    img_tensor = torch.permute(img_tensor, (2, 0, 1))
+    prev_tensor = prev_tensor[None, :]
+    img_tensor = img_tensor[None, :]
 
-    flow = np.array(estimate(torch.FloatTensor(prevgray), torch.FloatTensor(gray)))
-    prevgray = gray
+    prev_tensor, img_tensor = preprocess(prev_tensor, img_tensor)
 
-    cv.imshow('flow', draw_flow(gray, flow))
-    cv.imshow('flow HSV', draw_hsv(flow))
+    flow = np.array(flow_to_image(model(prev_tensor.to(device), img_tensor.to(device))[0].cpu()))
+    prev = img
+
+    flow = flow[0, :, :, :]
+
+    flow = np.transpose(flow, (1, 2, 0))
+
+    # cv.imshow('flow', draw_flow(img, flow))
+    # cv.imshow('flow HSV', draw_hsv(flow))
+    cv.imshow('flow', flow)
 
     if cv.waitKey(5) == ord('q'):
         break
+
+# frames = []
+#
+# while len(frames) < 11:
+#     suc, img = cap.read()
+#
+#     frames.append(img)
+#
+#     if cv.waitKey(5) == ord('q'):
+#         break
+#
+# while True:
+#     suc, img = cap.read()
+#     #gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+#     img1_tensor = torch.FloatTensor(frames[:10])
+#     img2_tensor = torch.FloatTensor(frames[1:])
+#     img1_tensor = torch.permute(img1_tensor, (2, 0, 1))
+#     img2_tensor = torch.permute(img2_tensor, (2, 0, 1))
+#     img1_tensor = img1_tensor[None, :]
+#     img2_tensor = img2_tensor[None, :]
+#
+#     prev_tensor, img_tensor = preprocess(prev_tensor, img_tensor)
+#
+#     flow = np.array(model(prev_tensor.to(device), img_tensor.to(device))[-1].cpu())
+#     prev = img
+#
+#     flow = flow[0, :, :, :]
+#     print(flow)
+#
+#     cv.imshow('flow', draw_flow(img, flow))
+#     cv.imshow('flow HSV', draw_hsv(flow))
+#
+#     if cv.waitKey(5) == ord('q'):
+#         break
+
 
 cap.release()
 cv.destroyAllWindows()
