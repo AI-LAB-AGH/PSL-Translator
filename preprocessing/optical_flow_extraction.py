@@ -19,7 +19,19 @@ def extract_optical_flow_farneback(frames: list[np.ndarray]) -> list[np.ndarray]
     return flow
 
 
-def process_data(root_dir: str, target_dir: str, batch_size: int, annotations: dict, label_map: Any):
+def extract_optical_flow_dis(frames: list[np.ndarray]) -> list[np.ndarray]:
+    flow = []
+    for i in range(1, len(frames)):
+        img1 = frames[i - 1]
+        img2 = frames[i]
+        img1_gray = cv.cvtColor(img1, cv.COLOR_RGB2GRAY)
+        img2_gray = cv.cvtColor(img2, cv.COLOR_RGB2GRAY)
+        dis = cv.DISOpticalFlow.create(preset=2)
+        flow.append(torch.tensor(dis.calc(img1_gray, img2_gray, img1_gray)))
+    return flow
+
+
+def process_data(root_dir: str, target_dir: str, batch_size: int, annotations: dict, label_map: Any, method: str):
     data = []
     total = len(os.listdir(root_dir))
     for i, dir in enumerate(os.listdir(root_dir)):
@@ -29,7 +41,10 @@ def process_data(root_dir: str, target_dir: str, batch_size: int, annotations: d
         frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
         sample = [io.imread(os.path.join(path, frame)) for frame in frames]
         label = label_map[annotations[dir]]
-        flow = extract_optical_flow_farneback(sample)
+        if method == 'farneback':
+            flow = extract_optical_flow_farneback(sample)
+        elif method == 'dis':
+            flow = extract_optical_flow_dis(sample)
         data.append((label, flow))
         print(f'\rDirectory {i+1}/{total} processed', end='')
         if (i + 1) % batch_size == 0 or i + 1 == total:
@@ -37,7 +52,7 @@ def process_data(root_dir: str, target_dir: str, batch_size: int, annotations: d
             data.clear()
 
 
-def rgb_to_optical_flow_dataset(root_dir: str, target_dir: str, batch_size: int):
+def rgb_to_optical_flow_dataset(root_dir: str, target_dir: str, batch_size: int, method: str):
     labels = os.path.join(root_dir, 'labels.json')
     with open(labels, 'r', encoding='utf-8') as f:
         label_map = json.load(f)
@@ -55,8 +70,8 @@ def rgb_to_optical_flow_dataset(root_dir: str, target_dir: str, batch_size: int)
         annotations_test = {row[0]: row[1] for row in reader}
     f.close()
 
-    process_data(train_dir, target_train_dir, batch_size, annotations_train, label_map)
-    process_data(test_dir, target_test_dir, batch_size, annotations_test, label_map)
+    process_data(train_dir, target_train_dir, batch_size, annotations_train, label_map, method)
+    process_data(test_dir, target_test_dir, batch_size, annotations_test, label_map, method)
 
 
 def get_args():
@@ -65,6 +80,7 @@ def get_args():
     parser.add_argument('--batch_size', type=int, default=10, help='Number of video samples to be stored in each .pth file')
     parser.add_argument('--root_dir', type=str, default=os.path.join('data', 'RGB_debug'), help='Root directory containing the raw video dataset (.jpg)')
     parser.add_argument('--target_dir', type=str, default=os.path.join('data', 'RGB_OF'), help='Directory in which to save optical flow sequences (.pth)')
+    parser.add_argument('--method', type=str, default='dis', help='dis or farneback')
 
     return parser.parse_args()
 
@@ -75,8 +91,9 @@ def main():
     batch_size = args.batch_size
     root_dir = args.root_dir
     tgt_dir = args.target_dir
+    method = args.method
 
-    rgb_to_optical_flow_dataset(root_dir, tgt_dir, batch_size=batch_size)
+    rgb_to_optical_flow_dataset(root_dir, tgt_dir, batch_size=batch_size, method=method)
 
 if __name__ == '__main__':
     main()

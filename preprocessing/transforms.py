@@ -176,9 +176,16 @@ class NormalizeDistances:
 
 
 class ExtractOpticalFlow:
+    def __init__(self, extractor: str):
+        self.extractor = extractor
+
     def __call__(self, prev: np.ndarray, curr: np.ndarray) -> torch.tensor:
         prev_gray = cv2.cvtColor(prev, cv2.COLOR_RGB2GRAY)
         curr_gray = cv2.cvtColor(curr, cv2.COLOR_RGB2GRAY)
-        flow = torch.tensor(cv2.calcOpticalFlowFarneback(prev_gray, curr_gray, None, 0.5, 3, 5, 3, 5, 1.2, 0), dtype=torch.float32)
+        if self.extractor == 'farneback':
+            flow = torch.tensor(cv2.calcOpticalFlowFarneback(prev_gray, curr_gray, None, 0.5, 3, 5, 3, 5, 1.2, 0), dtype=torch.float32)
+        elif self.extractor == 'dis':
+            dis = cv2.DISOpticalFlow.create(2)
+            flow = torch.tensor(dis.calc(prev_gray, curr_gray, prev_gray), dtype=torch.float32)
         flow = flow[None, :]
         return flow

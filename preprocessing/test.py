@@ -8,6 +8,7 @@ import PIL.Image
 import sys
 import torch
 import cv2 as cv
+import torchvision.transforms
 from torchvision.models.optical_flow import raft_small, Raft_Small_Weights, raft_large, Raft_Large_Weights
 import torchvision.transforms.functional as F
 from torchvision.utils import flow_to_image
@@ -371,10 +372,12 @@ def draw_hsv(flow):
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-#weights = Raft_Small_Weights.C_T_V1
-weights = Raft_Large_Weights.C_T_V1
+weights = Raft_Small_Weights.DEFAULT
+#weights = Raft_Large_Weights.C_T_V1
 transforms = weights.transforms()
-model = raft_large(weights=weights).to(device)
+to_tensor = torchvision.transforms.ToTensor()
+
+model = raft_small(weights=weights).to(device)
 
 model.eval()
 
@@ -392,14 +395,16 @@ suc, prev = cap.read()
 while True:
     suc, img = cap.read()
     #gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    prev_tensor = torch.FloatTensor(prev)
-    img_tensor = torch.FloatTensor(img)
-    prev_tensor = torch.permute(prev_tensor, (2, 0, 1))
-    img_tensor = torch.permute(img_tensor, (2, 0, 1))
+    prev_tensor = to_tensor(prev)
+    img_tensor = to_tensor(img)
+    # prev_tensor = torch.permute(prev_tensor, (2, 0, 1))
+    # img_tensor = torch.permute(img_tensor, (2, 0, 1))
     prev_tensor = prev_tensor[None, :]
     img_tensor = img_tensor[None, :]
 
     prev_tensor, img_tensor = preprocess(prev_tensor, img_tensor)
+
+    #print(prev_tensor.mean())
 
     flow = np.array(flow_to_image(model(prev_tensor.to(device), img_tensor.to(device))[0].cpu()))
     prev = img

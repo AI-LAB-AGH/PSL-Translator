@@ -258,6 +258,9 @@ def get_args():
     parser.add_argument('--num_layers', type=int, default=1, help='Number of LSTM layers')
     parser.add_argument('--hidden_size', type=int, default=120, help='Hidden state dim in RNN model')
 
+    # preprocessing
+    parser.add_argument('--of_extractor', type=str, default='dis', help='dis or farneback')
+
     return parser.parse_args()
 
 
@@ -365,7 +368,8 @@ def main():
     if model_type == 'LSTM':
         loader = RTMPDataset(root_dir_test)
     if model_type == 'ConvLSTM':
-        run_real_time_inference_optical_flow(model, actions, transform=ExtractOpticalFlow())
+        extractor = args.of_extractor
+        run_real_time_inference_optical_flow(model, actions, transform=ExtractOpticalFlow(extractor))
     elif model_type == 'Forecaster':
         separate_sample(model, loader)
     else:
