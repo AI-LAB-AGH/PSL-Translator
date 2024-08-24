@@ -90,12 +90,13 @@ def inference(model, label_map, transform):
         action_text = f'{predicted_action}'
         tokens.append(action_text)
         tokens.pop(0)
-        token = max(set(tokens), key=tokens.count)
-        print(f'\r{tokens}', end='')
+        # token = max(set(tokens), key=tokens.count)
+        token = action_text
+        # print(f'\r{tokens}', end='')
         cv2.putText(img, token, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, int(confidence * 255), int(255 - confidence * 255)), 2, cv2.LINE_AA)
 
         if confidence > 0.6:
-            model.initialize_cell_and_hidden_state()
+            # model.initialize_cell_and_hidden_state()
             print('\r'+ ' ' * 100, end='')
             print(f'\rRecognized action: {predicted_action} with confidence: {confidence.item():.2f}', end='')
         else:
