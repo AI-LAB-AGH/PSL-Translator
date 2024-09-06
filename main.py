@@ -9,6 +9,7 @@ from models.model_transformer import TransformerModel
 from models.model_LSTM import LSTMModel
 from models.model_forecaster import Forecaster
 from models.model_conv_LSTM import ConvLSTM
+from models.model_LSTM_transformer import LSTMTransformerModel  # Import the new hybrid model
 from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
 from training import train, train_forecaster, display_results
 from preprocessing.transforms import ExtractLandmarksWithRTMP, ExtractOpticalFlow
@@ -18,7 +19,7 @@ from inference import *
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default=None, help='Model to use (LSTM, ConvLSTM, Transformer)')
+    parser.add_argument('--model', type=str, default=None, help='Model to use (LSTM, ConvLSTM, Transformer, LSTM-Transformer)')
     parser.add_argument('--dataset', type=str, default=None, help='Dataset (one of those in data/ directory) suitable for the chosen model')
 
     # flags
@@ -29,9 +30,11 @@ def get_args():
     parser.add_argument('--num_epochs', type=int, default=50, help='Number of training epochs')
     parser.add_argument('--batch_size', type=int, default=1, help='Training batch size')
 
-    # LSTM hyperparameters
+    # LSTM and Transformer hyperparameters
     parser.add_argument('--num_layers', type=int, default=1, help='Number of LSTM layers')
     parser.add_argument('--hidden_size', type=int, default=20, help='Hidden state dim in RNN model')
+    parser.add_argument('--num_heads', type=int, default=4, help='Number of attention heads in Transformer')
+    parser.add_argument('--transformer_layers', type=int, default=2, help='Number of Transformer encoder layers')
 
     return parser.parse_args()
 
@@ -41,11 +44,11 @@ def main():
 
     model_type = args.model
     dataset = args.dataset
-    root_dir_train = 'data/'+dataset+'/train'
-    root_dir_test = 'data/'+dataset+'/test'
-    annotations_train = 'data/'+dataset+'/annotations_train.csv'
-    annotations_test = 'data/'+dataset+'/annotations_test.csv'
-    labels = 'data/'+dataset+'/labels.json'
+    root_dir_train = 'data/' + dataset + '/train'
+    root_dir_test = 'data/' + dataset + '/test'
+    annotations_train = 'data/' + dataset + '/annotations_train.csv'
+    annotations_test = 'data/' + dataset + '/annotations_test.csv'
+    labels = 'data/' + dataset + '/labels.json'
     label_map = None
     actions = None
     if os.path.isfile(labels):
@@ -54,10 +57,10 @@ def main():
     if label_map is not None:
         actions = np.array(list(label_map.keys()))
         num_classes = 219
-    model_path = 'models/pretrained/'+model_type+'_'+dataset+'.pth'
+    model_path = 'models/pretrained/' + model_type + '_' + dataset + '.pth'
 
     # Landmark extraction methods
-    if model_type == 'LSTM' or model_type == 'Forecaster':
+    if model_type in ['LSTM', 'Forecaster', 'LSTM-Transformer']:
         extractor = RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx')
 
     # Training params
@@ -66,19 +69,24 @@ def main():
     lr = args.lr
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
-    if model_type == 'LSTM' or model_type == 'Forecaster':
+    if model_type in ['LSTM', 'Forecaster', 'LSTM-Transformer']:
         transform = ExtractLandmarksWithRTMP(extractor)
     else:
         transform = None
     from_checkpoint = args.from_checkpoint
-    
+
     # Model params
     hidden_size = args.hidden_size
     num_layers = args.num_layers
-
+    num_heads = args.num_heads  # Number of heads for Transformer
+    transformer_layers = args.transformer_layers  # Number of Transformer layers
+    attention_dim = 64
+    
+    # Model initialization
     match model_type:
-        # case 'Transformer':
-        #     model = TransformerModel(input_size, num_classes)
+        case 'Transformer':
+            input_size = 0
+            model = TransformerModel(input_size, num_classes)
 
         case 'LSTM':
             model = LSTMModel(hidden_size, num_layers, num_classes)
@@ -86,8 +94,11 @@ def main():
         case 'ConvLSTM':
             model = ConvLSTM(hidden_size, num_layers, num_classes)
 
-        # case 'Forecaster':
-        #     model = LSTMModel(hidden_size, num_layers, input_size - 21*2*2)
+        case 'LSTM-Transformer':  # New hybrid model case
+            model = LSTMTransformerModel(hidden_size, num_layers, num_classes, attention_dim)
+            
+        case 'Forecaster':
+            model = LSTMModel(hidden_size, num_layers, input_size - 21*2*2)
 
     if from_checkpoint:
         model.load_state_dict(torch.load(model_path))
@@ -128,7 +139,7 @@ def main():
         else:
             results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         display_results(results, actions)
-    
+
     if model_type == 'ConvLSTM':
         inference_optical_flow(model, actions, transform=ExtractOpticalFlow())
     elif model_type == 'Forecaster':
@@ -136,6 +147,7 @@ def main():
         separate_sample(model, transform, loader)
     else:
         inference(model, label_map, transform)
+
 
 if __name__ == "__main__":
     main()
