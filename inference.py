@@ -3,6 +3,7 @@ import cv2
 import torch
 import random
 import matplotlib.pyplot as plt
+import time
 
 
 def separate_sample(model, transform, test_loader, threshold=0.005):
@@ -54,8 +55,83 @@ def separate_sample(model, transform, test_loader, threshold=0.005):
     plt.plot(x, avg)
     plt.show()
 
+import time
 
 def inference(model, label_map, transform):
+    actions = dict([(value, key) for key, value in label_map.items()])
+    window_width = 10
+    tokens = ['' for _ in range(window_width)]
+    confidence_window = [] 
+    action_window = [] 
+    
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Cannot access camera.")
+        exit()
+
+    model.initialize_cell_and_hidden_state()
+    last_action = "" 
+    last_action_time = time.time() 
+    action_display_duration = 1 
+
+    while True:
+        success, img = cap.read()
+        if not success:
+            print("Failed to capture image.")
+            return False
+        
+        x = transform([img])
+        x = torch.tensor(x[0], dtype=torch.float32)
+        x = x.view(1, 133, 2)
+        output = model(x)
+        
+        output[0] = torch.nn.functional.softmax(output[0])
+        confidence, predicted_index = torch.max(output, dim=1)
+        predicted_action = actions[predicted_index.item()]
+
+        confidence_window.append(confidence.item())
+        action_window.append(predicted_action)
+
+        if len(confidence_window) > 4:
+            confidence_window.pop(0)
+            action_window.pop(0)
+
+        if (len(confidence_window) == 4 and
+            all(c > 0.7 for c in confidence_window) and
+            len(set(action_window)) == 1):
+            model.initialize_cell_and_hidden_state()
+            last_action = predicted_action
+            last_action_time = time.time() 
+            print("\rHidden state reset due to high confidence and consistent gesture over 5 frames", end='')
+
+        if time.time() - last_action_time < action_display_duration:
+            cv2.putText(img, last_action, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        else:
+            cv2.putText(img, "No action", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+
+        if confidence > 0.6:
+            print('\r'+ ' ' * 100, end='')
+            print(f'\rRecognized action: {predicted_action} with confidence: {confidence.item():.2f}', end='')
+        else:
+            print('\r'+ ' ' * 100, end='')
+            print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
+
+        cv2.imshow('Camera', img)
+        key = cv2.waitKey(1)
+        if key == ord('r') or key == ord('R'): 
+            model.initialize_cell_and_hidden_state()
+            print("\rHidden state manually reset by pressing 'R'", end='')
+            
+        if key == 27:
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+
+
+def _inference(model, label_map, transform):
     actions = dict([(value, key) for key, value in label_map.items()])
     window_width = 10
     tokens = ['' for _ in range(window_width)]
