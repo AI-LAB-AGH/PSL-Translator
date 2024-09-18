@@ -9,7 +9,7 @@ from models.model_transformer import TransformerModel
 from models.model_LSTM import LSTMModel
 from models.model_forecaster import Forecaster
 from models.model_conv_LSTM import ConvLSTM
-from models.model_LSTM_transformer import LSTMTransformerModel  # Import the new hybrid model
+from models.model_LSTM_transformer import LSTMTransformerModel
 from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
 from training import train, train_forecaster, display_results
 from preprocessing.transforms import ExtractLandmarksWithRTMP, ExtractOpticalFlow

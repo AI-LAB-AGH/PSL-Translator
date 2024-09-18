@@ -24,7 +24,7 @@ class LSTMTransformerModel(nn.Module):
         self.h_l = self.c_l = self.h_r = self.c_r = self.h_f2r = self.c_f2l = self.h_h2h = self.c_h2h = None
 
     def initialize_cell_and_hidden_state(self) -> None:
-         """
+        """
         Initializes the cell state and hidden state for both hand modules with zeros.
         
         Should be called once before passing in each training sample, and once before
