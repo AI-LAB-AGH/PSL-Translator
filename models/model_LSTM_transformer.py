@@ -2,17 +2,22 @@ import torch.nn as nn
 import torch
 
 class LSTMTransformerModel(nn.Module):
-    def __init__(self, hidden_size, num_layers, num_classes, attention_dim):
+    def __init__(self, hidden_size, num_layers, num_classes, attention_dim, dropout=0.3):
         super(LSTMTransformerModel, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.attention_dim = attention_dim
+        self.dropout = dropout
+        
+        lstm_dropout = self.dropout if self.num_layers > 1 else 0.0
 
-        self.l = nn.LSTM(21 * 2, hidden_size, num_layers)
-        self.r = nn.LSTM(21 * 2, hidden_size, num_layers)
-        self.f2l = nn.LSTM(21 * 2, hidden_size, num_layers)
-        self.f2r = nn.LSTM(21 * 2, hidden_size, num_layers)
-        self.h2h = nn.LSTM(21 * 2, hidden_size, num_layers)
+        self.l = nn.LSTM(21 * 2, hidden_size, num_layers, dropout=lstm_dropout)
+        self.r = nn.LSTM(21 * 2, hidden_size, num_layers, dropout=lstm_dropout)
+        self.f2l = nn.LSTM(21 * 2, hidden_size, num_layers, dropout=lstm_dropout)
+        self.f2r = nn.LSTM(21 * 2, hidden_size, num_layers, dropout=lstm_dropout)
+        self.h2h = nn.LSTM(21 * 2, hidden_size, num_layers, dropout=lstm_dropout)
+        
+        self.dropout_layer = nn.Dropout(self.dropout)
         
         self.fuse = nn.Linear(5 * hidden_size, hidden_size)
 
@@ -50,7 +55,6 @@ class LSTMTransformerModel(nn.Module):
         x = x.float()
         x = x.unsqueeze(1)
 
-        # Wybieranie odpowiednich fragmentów wejścia
         source_body = x[0][0][0].clone()
         source_left = x[0][0][100].clone()
         source_right = x[0][0][121].clone()
