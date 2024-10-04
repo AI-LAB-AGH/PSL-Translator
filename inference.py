@@ -83,6 +83,7 @@ def inference(model, label_map, transform):
         x = transform([img])
         x = torch.tensor(x[0], dtype=torch.float32)
         x = x.view(1, 133, 2)
+
         output = model(x)
         
         output[0] = torch.nn.functional.softmax(output[0])
@@ -91,13 +92,15 @@ def inference(model, label_map, transform):
 
         confidence_window.append(confidence.item())
         action_window.append(predicted_action)
+        
+        img_mirrored = cv2.flip(img, 1)
 
-        if len(confidence_window) > 4:
+        if len(confidence_window) > 6:
             confidence_window.pop(0)
             action_window.pop(0)
 
-        if (len(confidence_window) == 4 and
-            all(c > 0.7 for c in confidence_window) and
+        if (len(confidence_window) == 6 and
+            all(c > 0.95 for c in confidence_window) and
             len(set(action_window)) == 1):
             model.initialize_cell_and_hidden_state()
             last_action = predicted_action
@@ -105,9 +108,9 @@ def inference(model, label_map, transform):
             print("\rHidden state reset due to high confidence and consistent gesture over 5 frames", end='')
 
         if time.time() - last_action_time < action_display_duration:
-            cv2.putText(img, last_action, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+            cv2.putText(img_mirrored, last_action, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
         else:
-            cv2.putText(img, "No action", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+            cv2.putText(img_mirrored, "No action", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
 
         if confidence > 0.6:
             print('\r'+ ' ' * 100, end='')
@@ -116,7 +119,7 @@ def inference(model, label_map, transform):
             print('\r'+ ' ' * 100, end='')
             print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
 
-        cv2.imshow('Camera', img)
+        cv2.imshow('Camera', img_mirrored)
         key = cv2.waitKey(1)
         if key == ord('r') or key == ord('R'): 
             model.initialize_cell_and_hidden_state()
