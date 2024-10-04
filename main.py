@@ -27,12 +27,12 @@ def get_args():
 
     # model hyperparameters
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
-    parser.add_argument('--num_epochs', type=int, default=50, help='Number of training epochs')
+    parser.add_argument('--num_epochs', type=int, default=25, help='Number of training epochs')
     parser.add_argument('--batch_size', type=int, default=1, help='Training batch size')
 
     # LSTM and Transformer hyperparameters
     parser.add_argument('--num_layers', type=int, default=1, help='Number of LSTM layers')
-    parser.add_argument('--hidden_size', type=int, default=20, help='Hidden state dim in RNN model')
+    parser.add_argument('--hidden_size', type=int, default=128, help='Hidden state dim in RNN model')
     parser.add_argument('--num_heads', type=int, default=4, help='Number of attention heads in Transformer')
     parser.add_argument('--transformer_layers', type=int, default=2, help='Number of Transformer encoder layers')
 
@@ -57,7 +57,7 @@ def main():
     if label_map is not None:
         actions = np.array(list(label_map.keys()))
         num_classes = 219
-    model_path = 'models/pretrained/' + model_type + '_' + dataset + '.pth'
+    model_path = 'models/pretrained/' + model_type + '_' + dataset + '_' + '.pth'
 
     # Landmark extraction methods
     if model_type in ['LSTM', 'Forecaster', 'LSTM-Transformer']:
@@ -94,7 +94,7 @@ def main():
         case 'ConvLSTM':
             model = ConvLSTM(hidden_size, num_layers, num_classes)
 
-        case 'LSTM-Transformer':  # New hybrid model case
+        case 'LSTM-Transformer':
             model = LSTMTransformerModel(hidden_size, num_layers, num_classes, attention_dim)
             
         case 'Forecaster':
@@ -116,6 +116,21 @@ def main():
                 test_dataset = RTMPDataset(root_dir_test, transform, None)
 
             case 'RGB_RTMP':
+                train_dataset = RTMPDataset(root_dir_train, transform, None)
+                print('Done. Loading testing set...')
+                test_dataset = RTMPDataset(root_dir_test, transform, None)
+                
+            case 'RGB_more_RTMP':
+                train_dataset = RTMPDataset(root_dir_train, transform, None)
+                print('Done. Loading testing set...')
+                test_dataset = RTMPDataset(root_dir_test, transform, None)
+            
+            case 'RGB_more_copy_RTMP':
+                train_dataset = RTMPDataset(root_dir_train, transform, None)
+                print('Done. Loading testing set...')
+                test_dataset = RTMPDataset(root_dir_test, transform, None)
+            
+            case 'RGB_more_augmented_4_RTMP':
                 train_dataset = RTMPDataset(root_dir_train, transform, None)
                 print('Done. Loading testing set...')
                 test_dataset = RTMPDataset(root_dir_test, transform, None)
