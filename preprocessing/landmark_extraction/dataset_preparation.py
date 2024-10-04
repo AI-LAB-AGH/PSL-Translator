@@ -91,10 +91,11 @@ def extract_landmarks_with_RTMP(model, sample):
             elif idx in hand_right_indices:
                 cv2.circle(frame, (x, y), 3, (0, 0, 255), -1)  # Red for right hand
         
-        if hands_visible:
-            landmarks.append(result)
-        else:
-            cv2.putText(frame, "Hands not visible", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        # if hands_visible:
+        #     landmarks.append(result)
+        # else:
+        #     cv2.putText(frame, "Hands not visible", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        landmarks.append(result)
         
         cv2.imshow('Landmarks', frame)  # no-spell-check
         cv2.waitKey(1)
@@ -144,24 +145,38 @@ def preprocess_directory(root_dir: str, tgt_dir: str, annotations: dict, label_m
                 continue 
 
         landmarks = extractor(sample)
-        data.append((label, landmarks))
+        if len(landmarks) > 0:
+            data.append((label, landmarks))
+        else:
+            print(f"Warning: No landmarks found for directory: {dir}")
         
         if augment:
             # Landmarks modification
             augmented_landmarks = extractor(sample)  
             augmented_landmarks = augment_landmarks(augmented_landmarks) 
-            data.append((label, augmented_landmarks))
+            if len(augmented_landmarks) > 0: 
+                data.append((label, augmented_landmarks))
+            else:
+                print(f"Warning: No landmarks found for directory: {dir} after augmentation")
             
             # Frames modification augmentations
             modified_sample = augment_with_frame_modification(sample)
             modified_landmarks = extractor(modified_sample)
-            data.append((label, modified_landmarks))
+            if len(modified_landmarks) > 0:
+                data.append((label, modified_landmarks))
+            else:
+                print(f"Warning: No landmarks found for directory: {dir} after augmentation")
             
             # Frame and landmarks modification
             modified_sample = augment_with_frame_modification(sample)
             modified_landmarks = extractor(modified_sample)
             modified_landmarks = augment_landmarks(modified_landmarks)
-            data.append((label, modified_landmarks))
+            if len(modified_landmarks) > 0:
+                data.append((label, modified_landmarks))
+            else:
+                print(f"Warning: No landmarks found for directory: {dir} after augmentation")
+        
+        print(f'\rDirectory {i+1}/{num_dirs} processed', end='')
 
         if i % 100 == 0:
             torch.save(data, os.path.join(tgt_dir, 'data.pth'))
@@ -193,8 +208,8 @@ def main():
     # preprocess_landmarks(root_dir, tgt_dir)
 
     ### PREPROCESSING .JPG FRAMES
-    root_dir = 'data/RGB_more'
-    tgt_dir = 'data/RGB_more_augmented_2_RTMP_landmarks_test'
+    root_dir = 'data/RGB_more_copy'
+    tgt_dir = 'data/RGB_more_copy_RTMP'
 
     ## Mediapipe
     # model = mp.solutions.holistic.Holistic(min_detection_confidence=0.75, min_tracking_confidence=0.75)
