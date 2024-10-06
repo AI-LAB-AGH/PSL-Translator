@@ -59,6 +59,7 @@ def save_image(cap, subset, sample_num, frame, path):
         return False
 
     if frame is not None:
+        image = cv2.resize(image, dsize=(160, 120), interpolation=cv2.INTER_CUBIC)
         cv2.imwrite(os.path.join(path, subset, str(sample_num), f'{frame}.jpg'), image)
 
 
