@@ -78,7 +78,7 @@ def prepare_dataset(root_dir: str, tgt_dir: str, extractor) -> None:
 
     (annotations_train, annotations_test) = get_annotations(root_dir)
 
-    # preprocess_directory(train_dir, tgt_train_dir, annotations_train, label_map, extractor)
+    preprocess_directory(train_dir, tgt_train_dir, annotations_train, label_map, extractor)
     preprocess_directory(test_dir, tgt_test_dir, annotations_test, label_map, extractor)
 
 
