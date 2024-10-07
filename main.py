@@ -119,18 +119,8 @@ def main():
                 train_dataset = RTMPDataset(root_dir_train, transform, None)
                 print('Done. Loading testing set...')
                 test_dataset = RTMPDataset(root_dir_test, transform, None)
-                
-            case 'RGB_more_RTMP':
-                train_dataset = RTMPDataset(root_dir_train, transform, None)
-                print('Done. Loading testing set...')
-                test_dataset = RTMPDataset(root_dir_test, transform, None)
-            
-            case 'RGB_more_copy_RTMP':
-                train_dataset = RTMPDataset(root_dir_train, transform, None)
-                print('Done. Loading testing set...')
-                test_dataset = RTMPDataset(root_dir_test, transform, None)
-            
-            case 'RGB_more_augmented_4_RTMP':
+
+            case dataset if dataset.startswith('RGB_more_') and dataset.endswith('_RTMP'):
                 train_dataset = RTMPDataset(root_dir_train, transform, None)
                 print('Done. Loading testing set...')
                 test_dataset = RTMPDataset(root_dir_test, transform, None)

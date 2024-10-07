@@ -63,6 +63,10 @@ def inference(model, label_map, transform):
     tokens = ['' for _ in range(window_width)]
     confidence_window = [] 
     action_window = [] 
+    hands_visible_window = []
+    
+    hand_left_indices = [idx for idx in range(91, 112)]
+    hand_right_indices = [idx for idx in range(112, 133)]
     
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -85,6 +89,16 @@ def inference(model, label_map, transform):
         x = x.view(1, 133, 2)
 
         output = model(x)
+        
+        result = x[0].clone().detach().numpy()
+        hands_visible = (
+            any(result[idx, 0] != 0 or result[idx, 1] != 0 for idx in hand_left_indices) or
+            any(result[idx, 0] != 0 or result[idx, 1] != 0 for idx in hand_right_indices)
+        )
+        hands_visible_window.append(hands_visible)
+        
+        if len(hands_visible_window) > 5:
+            hands_visible_window.pop(0)
         
         output[0] = torch.nn.functional.softmax(output[0])
         confidence, predicted_index = torch.max(output, dim=1)
@@ -111,6 +125,12 @@ def inference(model, label_map, transform):
             cv2.putText(img_mirrored, last_action, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
         else:
             cv2.putText(img_mirrored, "No action", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+        
+        if len(hands_visible_window) == 5 and not any(hands_visible_window):
+            model.initialize_cell_and_hidden_state()
+            hands_visible_window = []
+            print("\rHidden state reset due to lack of hand detection over the last 5 frames", end='')
+            cv2.putText(img_mirrored, "Reset hidden state", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA)
 
         if confidence > 0.6:
             print('\r'+ ' ' * 100, end='')

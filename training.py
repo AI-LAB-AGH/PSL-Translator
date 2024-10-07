@@ -4,6 +4,14 @@ import random
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, confusion_matrix
+import os
+from datetime import datetime
+
+def create_model_dir(model_name: str) -> str:
+    """Creates a directory for storing model checkpoints."""
+    dir_path = f"./{model_name}_checkpoints"
+    os.makedirs(dir_path, exist_ok=True)
+    return dir_path
 
 def train(model: torch.nn.Module,
           train_loader: torch.utils.data.DataLoader,
@@ -13,6 +21,11 @@ def train(model: torch.nn.Module,
           crit=torch.nn.CrossEntropyLoss,
           optim=torch.optim.Adam,
           save_path=None) -> dict:
+    
+    current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    model_name = f"model_{current_time}"
+    
+    model_dir = create_model_dir(model_name)
     
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model.to(device)
@@ -68,6 +81,11 @@ def train(model: torch.nn.Module,
         history['accuracy'].append(accuracy)
 
         print(f'\rEpoch {epoch+1}/{num_epochs}, Loss: {running_loss/len(train_loader)}, Accuracy: {accuracy}')
+        
+        if epoch > 10 == 0:
+            checkpoint_path = os.path.join(model_dir, f"{model_name}_epoch_{epoch + 1}.pt")
+            torch.save(model.state_dict(), checkpoint_path)
+            print(f"Model saved at epoch {epoch + 1} to {checkpoint_path}")
 
     with open('training_history.json', 'w') as f:
         json.dump(history, f)
