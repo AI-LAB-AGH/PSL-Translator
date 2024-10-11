@@ -5,7 +5,7 @@ import argparse
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', type=str, default=os.path.join('data', 'RGB'), help='Path to the root of data (RGB)')
+    parser.add_argument('--data_path', type=str, default=os.path.join('data', 'tmp', 'RGB'), help='Path to the root of data (RGB)')
     parser.add_argument('--first_index_to_move', type=int, help='First index of the chunk of data to move')
     parser.add_argument('--last_index_to_move', type=int, help='Last index of the chunk of samples to move')
     parser.add_argument('--target_first_index', type=int, help='Where to move first index')
@@ -19,6 +19,8 @@ def main():
     move_from = args.first_index_to_move
     last_idx = args.last_index_to_move
     move_to = args.target_first_index
+
+    assert (move_to - move_from) % 5 == 0, 'the difference between first_index_to_move and last_index_to_move must be divisible by 5'
 
     with open(os.path.join(data_path, 'annotations_train.csv')) as f:
         annotations_train = list(csv.reader(f))
