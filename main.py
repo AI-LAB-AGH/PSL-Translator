@@ -90,6 +90,7 @@ def main():
         #     model = LSTMModel(hidden_size, num_layers, input_size - 21*2*2)
 
     if from_checkpoint:
+        print('Loading model from checkpoint...')
         model.load_state_dict(torch.load(model_path))
     else:
         print('Loading training set...')
