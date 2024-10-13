@@ -1,7 +1,6 @@
 import cv2
 import os
 
-
 # Modify the paths accordingly
 data_path = os.path.join('data', 'RGB')
 resized_path = os.path.join('data', 'resized')

@@ -32,7 +32,7 @@ def train(model: torch.nn.Module,
             model.initialize_cell_and_hidden_state()
             while outputs is None:
                 cut = 0
-                # cut = int(len(inputs) * 0.1)
+                cut = int(len(inputs) * 0.1)
                 for frame in range(cut, len(inputs) - cut):
                     skip = random.randint(0, 3)
                     if not skip:
