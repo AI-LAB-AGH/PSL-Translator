@@ -1,7 +1,6 @@
 import os
 import cv2
 import time
-import mediapipe as mp
 
 
 """
@@ -10,7 +9,7 @@ so as to not to clutter data_collection.py too much.
 """
 
 
-PATH = os.path.join('data', 'RGB')
+PATH = os.path.join('dvc_module', 'tmp')
 
 def count_samples() -> int:
     train_dirs = os.listdir(os.path.join(PATH, 'train'))

@@ -1,6 +1,8 @@
 # Datasets and pretrained RTMPose
 data/
 preprocessing/landmark_extraction/end2end.onnx
+dvc_module/config.py
+dvc_module/tmp/*
 
 # Byte-compiled / optimized / DLL files
 *__pycache__/

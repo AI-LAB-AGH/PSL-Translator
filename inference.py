@@ -2,7 +2,20 @@ import os
 import cv2
 import torch
 import random
+import mediapipe as mp
 import matplotlib.pyplot as plt
+
+def draw_landmarks(img, holistic) -> cv2.UMat:
+    img = cv2.flip(img, 1)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img.flags.writeable = False
+    results = holistic.process(img)
+    img.flags.writeable = True
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    if results.multi_hand_landmarks:
+        for hand in results.multi_hand_landmarks:
+            mp.solutions.drawing_utils.draw_landmarks(img, hand, mp.solutions.holistic.HAND_CONNECTIONS)
+    return img
 
 
 def separate_sample(model, transform, test_loader, threshold=0.005):
@@ -56,9 +69,11 @@ def separate_sample(model, transform, test_loader, threshold=0.005):
 
 
 def inference(model, label_map, transform):
+    holistic = mp.solutions.hands.Hands()
     actions = dict([(value, key) for key, value in label_map.items()])
     window_width = 10
     tokens = ['' for _ in range(window_width)]
+    threshold = 0.9
     
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -87,16 +102,24 @@ def inference(model, label_map, transform):
         predicted_action = actions[predicted_index.item()]
 
         # Output the recognized action
-        action_text = f'{predicted_action}'
+        # --- Based on threshold ---
+        # action_text = f'{predicted_action}' if confidence > threshold else action_text
+
+        # --- Based on the mode of last `window_width` predictions
         tokens.append(action_text)
         tokens.pop(0)
-        # token = max(set(tokens), key=tokens.count)
-        token = action_text
+        token = max(set(tokens), key=tokens.count)
+        action_text = token
         # print(f'\r{tokens}', end='')
+
+        # --- Visualization ---
+        # img = draw_landmarks(img, holistic)
+
         cv2.putText(img, token, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, int(confidence * 255), int(255 - confidence * 255)), 2, cv2.LINE_AA)
 
-        if confidence > 0.6:
-            # model.initialize_cell_and_hidden_state()
+        if confidence > threshold:
+            # --- Resetting LSTM states upon reaching threshold ---
+            model.initialize_cell_and_hidden_state()
             print('\r'+ ' ' * 100, end='')
             print(f'\rRecognized action: {predicted_action} with confidence: {confidence.item():.2f}', end='')
         else:
