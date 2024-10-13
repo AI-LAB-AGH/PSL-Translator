@@ -69,7 +69,6 @@ def separate_sample(model, transform, test_loader, threshold=0.005):
 
 
 def inference(model, label_map, transform):
-    holistic = mp.solutions.hands.Hands()
     actions = dict([(value, key) for key, value in label_map.items()])
     window_width = 10
     tokens = ['' for _ in range(window_width)]
@@ -103,19 +102,18 @@ def inference(model, label_map, transform):
 
         # Output the recognized action
         # --- Based on threshold ---
-        # action_text = f'{predicted_action}' if confidence > threshold else action_text
+        action_text = f'{predicted_action}' if confidence > threshold else action_text
 
         # --- Based on the mode of last `window_width` predictions
         tokens.append(action_text)
         tokens.pop(0)
         token = max(set(tokens), key=tokens.count)
-        action_text = token
         # print(f'\r{tokens}', end='')
 
         # --- Visualization ---
         # img = draw_landmarks(img, holistic)
 
-        cv2.putText(img, token, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, int(confidence * 255), int(255 - confidence * 255)), 2, cv2.LINE_AA)
+        img = cv2.putText(img, action_text, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, int(confidence * 255), int(255 - confidence * 255)), 2, cv2.LINE_AA)
 
         if confidence > threshold:
             # --- Resetting LSTM states upon reaching threshold ---
@@ -123,7 +121,6 @@ def inference(model, label_map, transform):
             print('\r'+ ' ' * 100, end='')
             print(f'\rRecognized action: {predicted_action} with confidence: {confidence.item():.2f}', end='')
         else:
-            pass
             print('\r'+ ' ' * 100, end='')
             print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
 
