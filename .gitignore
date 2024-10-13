@@ -1,7 +1,8 @@
-# Datasets
-data/*/*/
-data/*/*.csv
-data/*/*.json
+# Datasets and pretrained RTMPose
+data/
+preprocessing/landmark_extraction/end2end.onnx
+dvc_module/config.py
+dvc_module/tmp/*
 
 # Byte-compiled / optimized / DLL files
 *__pycache__/
@@ -164,7 +165,7 @@ cython_debug/
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+.idea/
 
 data_old
 .data_old
@@ -173,3 +174,6 @@ data_old/
 .data
 .data/
 /data_old/
+notebooks*
+/data
+bfg-1.14.0.jar
