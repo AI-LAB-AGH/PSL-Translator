@@ -3,6 +3,7 @@ data/
 preprocessing/landmark_extraction/end2end.onnx
 dvc_module/config.py
 dvc_module/tmp/*
+translation/data_collection/gpt_api_key.py
 
 # Byte-compiled / optimized / DLL files
 *__pycache__/
