@@ -24,12 +24,18 @@ class GptDataCollector:
                             "Oto przykładowa para prompt - odpowiedź:"
                             "prompt: \"Wygeneruj mi 3 pary zdań\""
                             "odpowiedź: "
-                            "\"Ty szkoła kiedy?\n"
+                            "\"Ja książka w poniedziałek czyta było\n"
+                            "Czytałem książkę w poniedziałek\n"
+                            "Ty mieszkać gdzie?\n"
+                            "Gdzie mieszkasz?\n"
+                            "On gazeta czytać już\n"
+                            "On przeczytał gazetę\n"
+                            "Ty szkoła kiedy?\n"
                             "Kiedy masz szkołę?\n"
                             "Ja brat siostra mieć\n"
                             "Ja mam brata i siostrę\n"
-                            "On gazeta czytać już\n"
-                            "On przeczytał gazetę\n\""
+                            "On rower nowy kupić.\n"
+                            "On kupił nowy rower\n\""
                             "Staraj się układać różnorodne zdania, ale "
                             "stosuj się do zasad gramatyki języka migowego, które znajdziesz"
                             f"w następującym tekście: \"{self.pdf_text}\""},
@@ -39,10 +45,12 @@ class GptDataCollector:
 
 
 def main():
-    gpt = GptDataCollector("gpt-4o", "pjm_grammar.pdf")
-    answer = gpt.prompt_gpt()
-    with open("data.txt", "a", encoding="UTF-8") as f:
-        f.write(answer)
+    for i in range(5):
+        gpt = GptDataCollector("gpt-4o", "pjm_grammar.pdf")
+        answer = gpt.prompt_gpt()
+        with open("val_data.txt", "a+", encoding="UTF-8") as f:
+            f.write("\n")
+            f.write(answer)
 
 
 
