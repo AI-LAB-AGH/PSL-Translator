@@ -11,7 +11,7 @@ class GecDataset(Dataset):
                 incorrect_sentence = data["incorrect"]
                 correct_sentence = data["correct"]
                 self.data.append((incorrect_sentence, correct_sentence))
-        boundary = int(len(self.data)*0.95)
+        boundary = int(len(self.data) * 0.95)
         if val:
             self.data = self.data[boundary:]
         else:
@@ -19,7 +19,6 @@ class GecDataset(Dataset):
 
         self.transform = transform
         self.target_transform = target_transform
-
 
     def __len__(self):
         return len(self.data)
