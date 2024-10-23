@@ -5,7 +5,7 @@ from translation.data_collection.pdf_text_extractor import PdfTextExtractor
 
 class GptDataCollector:
     """
-    A class which manages text data collection using GPT.
+    A class which manages text nlp_data collection using GPT.
     """
 
     def __init__(self, model: str, pdf_path: str):
@@ -48,7 +48,7 @@ def main():
     for i in range(5):
         gpt = GptDataCollector("gpt-4o", "pjm_grammar.pdf")
         answer = gpt.prompt_gpt()
-        with open("val_data.txt", "a+", encoding="UTF-8") as f:
+        with open("../nlp_data/test_data.txt", "a+", encoding="UTF-8") as f:
             f.write("\n")
             f.write(answer)
 
