@@ -3,7 +3,7 @@ import json
 
 
 class GecDataset(Dataset):
-    def __init__(self, file_path, transform=None, target_transform=None):
+    def __init__(self, file_path, transform=None, target_transform=None, val=False):
         self.data = []
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in f:
@@ -11,8 +11,15 @@ class GecDataset(Dataset):
                 incorrect_sentence = data["incorrect"]
                 correct_sentence = data["correct"]
                 self.data.append((incorrect_sentence, correct_sentence))
+        boundary = int(len(self.data)*0.95)
+        if val:
+            self.data = self.data[boundary:]
+        else:
+            self.data = self.data[:boundary]
+
         self.transform = transform
         self.target_transform = target_transform
+
 
     def __len__(self):
         return len(self.data)
