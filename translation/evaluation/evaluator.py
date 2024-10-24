@@ -16,7 +16,7 @@ class Evaluator:
         rouge = self.rouge_evaluation()
         meteor = self.meteor_evaluation()
         ter = self.ter_evaluation()
-        return {"bleu": bleu, "rouge": rouge, "meteor": meteor, "ter": ter}
+        return {"bleu": bleu, "rouge": rouge, "meteor": meteor, "ter": ter, "model_name": self.model.name_or_path}
 
     def bleu_evaluation(self):
         score = 0
@@ -41,7 +41,8 @@ class Evaluator:
     def meteor_evaluation(self):
         score = 0
         for sample, target in self.data:
-            prediction = " ".join(self.translate(sample).split())
+            prediction = self.translate(sample).split()
+            target = target.split()
             meteor = meteor_score([target], prediction)
             score += meteor
         return score / len(self.data)
