@@ -14,8 +14,8 @@ def train(model: torch.nn.Module,
           optim=torch.optim.Adam,
           save_path=None) -> dict:
     
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    model.to(device)
+    #device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    #model.to(device)
     criterion = crit()
     optimizer = optim(model.parameters(), lr)
     history = {'epoch': [], 'loss': [], 'accuracy': []}
