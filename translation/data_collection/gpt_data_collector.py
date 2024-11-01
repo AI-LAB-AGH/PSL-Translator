@@ -24,7 +24,7 @@ class GptDataCollector:
                             "Oto przykładowa para prompt - odpowiedź:"
                             "prompt: \"Wygeneruj mi 3 pary zdań\""
                             "odpowiedź: "
-                            "\"Ja książka w poniedziałek czyta było\n"
+                            "\"Ja książka w poniedziałek czytać było\n"
                             "Czytałem książkę w poniedziałek\n"
                             "Ty mieszkać gdzie?\n"
                             "Gdzie mieszkasz?\n"
