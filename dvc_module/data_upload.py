@@ -10,8 +10,11 @@ class DataUploader:
         self.dataset_path = dataset_path
         self.tmp_path = tmp_path
 
+        print('INFO: Establishing Azure connection')
         blob_service_client = BlobServiceClient.from_connection_string(CONNECT)
         self.container_client = blob_service_client.get_container_client(CONTAINER)
+        print('INFO: Connection established')
+
         self.sample_count = self.count_samples()
 
 
@@ -194,4 +197,4 @@ class DataUploader:
 
         self.update_annotations('train')
         self.update_annotations('test')
-        print('DVC: Data integrity verified')
+        print('INFO: Data integrity verified')
