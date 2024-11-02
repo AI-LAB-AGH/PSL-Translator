@@ -1,0 +1,902 @@
+Ja szkoła iść teraz
+Idę teraz do szkoły  
+On dom budować cały rok  
+On buduje dom przez cały rok  
+Moja mama kawę pić codziennie  
+Moja mama pije kawę codziennie  
+Ty samochód nowy kupić kiedy?  
+Kiedy kupisz nowy samochód?  
+Ja pies wyprowadzać park codziennie  
+Codziennie wyprowadzam psa do parku  
+On lekarz być  
+On jest lekarzem  
+Ja chcieć kupić książka nowy  
+Chcę kupić nową książkę  
+Oni jechać nad morze latem  
+Oni pojadą nad morze latem  
+Ty lubić oglądać telewizja?  
+Czy lubisz oglądać telewizję?  
+My jeść obiad razem zawsze  
+Zawsze jemy obiad razem  
+Twoja siostra mieć kot?  
+Czy twoja siostra ma kota?  
+On uczę się niemiecki w domu  
+On uczy się niemieckiego w domu  
+Ja muzyka słuchać wieczorem  
+Słucham muzyki wieczorem  
+On spotkać przyjaciel wczoraj  
+On spotkał przyjaciela wczoraj  
+Ja gotować obiad teraz  
+Gotuję teraz obiad  
+Oni wczoraj byli w kinie  
+Oni byli wczoraj w kinie  
+Ty przyszłość planować jak?  
+Jak planujesz przyszłość?  
+On nigdy jeszcze nie być za granicą  
+On nigdy jeszcze nie był za granicą  
+Ja naprawić rower wczoraj  
+Naprawiłem rower wczoraj  
+Ty chcieć coś zjeść?  
+Czy chcesz coś zjeść?  
+Ona bardzo dobrze gotować  
+Ona bardzo dobrze gotuje  
+My dziś wieczorem film ogląda  
+Oglądamy dziś wieczorem film  
+Oni mieszkać razem dom duży  
+Oni mieszkają razem w dużym domu  
+Ty zawsze zapominać klucz?  
+Czy zawsze zapominasz klucz?  
+Ja widzieć on rok temu  
+Widziałem go rok temu  
+Ty wczoraj sport uprawiać?  
+Czy uprawiałeś wczoraj sport?  
+Ona książka pisać od miesiąc  
+Ona pisze książkę od miesiąca  
+Ja nie móc znaleźć moje okulary  
+Nie mogę znaleźć moich okularów  
+Ty wiedzieć on gdzie jest?  
+Czy wiesz, gdzie on jest?  
+On nigdy nie jeść owoce  
+On nigdy nie je owoców  
+My planować podróż następne lato  
+Planujemy podróż na następne lato  
+Ty umieć mówić po francusku?  
+Czy umiesz mówić po francusku?  
+Ja szukać praca nowa teraz  
+Szukam nowej pracy teraz  
+Ona dziś wyglądać bardzo ładny  
+Ona dziś wygląda bardzo ładnie  
+Ty kiedykolwiek widzieć gwiazdy?  
+Czy kiedykolwiek widziałeś gwiazdy?  
+Oni kochać siebie nawzajem  
+Oni kochają się nawzajem  
+Ja lubić spacerować wieczór  
+Lubię spacerować wieczorem  
+On zawsze spóźniać się do pracy  
+On zawsze spóźnia się do pracy  
+Ty często jeść pizza?  
+Czy często jesz pizzę?  
+Ja wczoraj zrobiony ciasto  
+Zrobiłem wczoraj ciasto  
+Ona nigdy nie mieć pies  
+Ona nigdy nie miała psa  
+Ty następny tydzień wolny mieć?  
+Czy masz wolny czas w przyszłym tygodniu?  
+On jutro iść na zakupy  
+On idzie jutro na zakupy  
+Ja potrzebować odpocząć teraz  
+Potrzebuję teraz odpocząć  
+Oni lubić podróżować autem  
+Oni lubią podróżować autem  
+Ja nie zapomnieć książka  
+Nie zapomnę książki  
+Ty znać dobre miejsce na lunch?  
+Czy znasz dobre miejsce na lunch?  
+On teraz uczyć się matematyka  
+On teraz uczy się matematyki  
+Ja umieć naprawić komputer  
+Umiem naprawić komputer  
+Oni obecnie pracować nad projektem  
+Oni obecnie pracują nad projektem  
+Ty szybko biegać?  
+Czy biegasz szybko?  
+Ona dzwonić do mnie wczoraj wieczorem  
+Ona dzwoniła do mnie wczoraj wieczorem  
+Ja nie widzieć on długo  
+Nie widziałem go długo  
+Ty uczę się grać gitarę?  
+Czy uczysz się grać na gitarze?  
+On teraz gotować obiad dla rodzina  
+On teraz gotuje obiad dla rodziny  
+Ja mieć dużo pracy ten tydzień  
+Mam dużo pracy w tym tygodniu  
+Oni kupić nowy dom miesiąc temu  
+Oni kupili nowy dom miesiąc temu  
+Ty często chodzić na koncerty?  
+Czy często chodzisz na koncerty?  
+Ja bardzo lubić gotować  
+Bardzo lubię gotować  
+On czasami grać w tenis  
+On czasami gra w tenisa  
+Ty znać jak upiec ciasto?  
+Czy wiesz, jak upiec ciasto?  
+Ona chodzić na basen raz tydzień  
+Ona chodzi na basen raz w tygodniu  
+Ja już przeczytać ta książka  
+Już przeczytałem tę książkę  
+Oni oglądać film wieczorem  
+Oni oglądają film wieczorem  
+Ty lubić spacerować w lesie?  
+Czy lubisz spacerować w lesie?  
+On pomagać mama w pracach dom  
+On pomaga mamie w pracach domowych  
+Ja często zapraszać przyjaciele na obiad  
+Często zapraszam przyjaciół na obiad  
+Ona zawsze pić herbata rano  
+Ona zawsze pije herbatę rano  
+Ty uczę się grać na pianinie?  
+Czy uczysz się grać na pianinie?  
+On dziś biegać szybko  
+On dziś biega szybko  
+Ja zamierzać podróżować jesienią  
+Zamierzam podróżować jesienią  
+Oni mieć dwa psy i jeden kot  
+Oni mają dwa psy i jednego kota  
+Ty wiedzieć gdzie jest stacja?  
+Czy wiesz, gdzie jest stacja?  
+On teraz słuchać muzyka  
+On teraz słucha muzyki  
+Ja nie móc znaleźć klucze  
+Nie mogę znaleźć kluczy  
+Ona często piec ciasto  
+Ona często piecze ciasto  
+Ty widzieć ten film wcześniej?  
+Czy widziałeś ten film wcześniej?  
+On uczyć się nowe słowa codziennie  
+On uczy się nowych słów codziennie  
+Ja mieć urodziny w maju  
+Mam urodziny w maju  
+Oni często jeść restauracja  
+Oni często jedzą w restauracji  
+Ty pić kawę codziennie?  
+Czy pijesz kawę codziennie?  
+On planować wyjazd za granicę w lato  
+On planuje wyjazd za granicę latem  
+Ja robić zakupy co tydzień  
+Robię zakupy co tydzień  
+Ona dzwonić do przyjaciółki często  
+Ona często dzwoni do przyjaciółki  
+Ty chcieć coś robić jutro?  
+Chcesz coś robić jutro?  
+On mieć spotkanie o 10 rano  
+On ma spotkanie o 10 rano  
+Ja wstać wcześnie rano  
+Wstaję wcześnie rano  
+Oni pisać do nas mail codziennie  
+Oni piszą do nas mail codziennie  
+Ty jechać gdzieś w weekend?  
+Czy jedziesz gdzieś w weekend?  
+On jeść śniadanie o 7 rano  
+On je śniadanie o 7 rano  
+Ja wczoraj obejrzeć film  
+Obejrzałem wczoraj film  
+Ona zawsze odwiedzać rodzic w niedziela  
+Ona zawsze odwiedza rodziców w niedzielę  
+Ty znać droga do dom?  
+Czy znasz drogę do domu?  
+On przynosić kwiaty swojej dziewczynie  
+On przynosi kwiaty swojej dziewczynie  
+Ja dom budować  
+Buduję dom  
+Ty jabłko jeść chcieć  
+Chcesz zjeść jabłko  
+Ona podróżować Francja  
+Ona podróżuje do Francji  
+My park spacerować  
+Spacujemy w parku  
+Wy film oglądać czas przyszły  
+Oglądniecie film w przyszłości  
+Oni pies wyprowadzać co rano  
+Wyprowadzają psa co rano  
+Ja szkoła zaczynać  
+Zaczynam szkołę  
+Ty kawa pić teraz  
+Pijesz teraz kawę  
+On grać piłka nożna  
+On gra w piłkę nożną  
+My książka kupić następny tydzień  
+Kupujemy książkę w następnym tygodniu  
+Wy restauracja jeść wczoraj  
+Jedliście w restauracji wczoraj  
+Oni dom sprzątać często  
+Oni często sprzątają dom  
+Ja przyjaciel odwiedzać  
+Odwiedzam przyjaciela  
+Ty komputer używać  
+Używasz komputera  
+Ona prezent dostawać  
+Ona dostaje prezent  
+My góra wspinać się  
+Wspinam się na górę  
+Wy basen pływać latem  
+Pływacie w basenie latem  
+Oni pies biegać codziennie  
+Pies biega codziennie  
+Ja pracować supermarket  
+Pracuję w supermarkecie  
+Ty muzyka słuchać  
+Słuchasz muzyki  
+On rower jeździć park  
+On jeździ rowerem w parku  
+My truskawki zbierać na polu  
+Zbieramy truskawki na polu  
+Wy telewizja oglądać raz miesiąc  
+Oglądacie telewizję raz w miesiącu  
+Oni ciasto piec weekendy  
+Pieczą ciasto w weekendy  
+Ja ryba łowić wakacje  
+Łowię ryby na wakacjach  
+Ty list pisać  
+Piszesz list  
+Ona okno myć dziś  
+Ona myje okno dzisiaj  
+My morze jechać lato  
+Jedziemy nad morze latem  
+Wy lekcja matematyka mieć czas przeszedły  
+Mieliście lekcję matematyki  
+Oni sklep zakupy robić  
+Robią zakupy w sklepie  
+Ja las spacerować rano  
+Spacuję w lesie rano  
+Ty zupa gotować mama  
+Twoja mama gotuje zupę  
+On pociąg przyjeżdżać  
+Pociąg przyjeżdża  
+My koncert idzie muzyka  
+Idziemy na koncert muzyczny  
+Wy w góry jechać tydzień przyszły  
+Jedziecie w góry w przyszłym tygodniu  
+Oni grać komputer gry raz tygodniowy  
+Grają w gry komputerowe raz w tygodniu  
+Ja pies wyprowadzać park  
+Wyprowadzam psa na spacer do parku  
+Ty książka na półka kłaść  
+Kładziesz książkę na półkę  
+On dom sprzedawać  
+On sprzedaje dom  
+My nauka język angielski  
+Uczymy się języka angielskiego  
+Wy kino idź wieczór  
+Idziecie do kina wieczorem  
+Oni krowa mleko doić  
+Doją mleko od krowy  
+Ja ryba smażyć obiad  
+Smażę rybę na obiad  
+Ty telefon dzwonić tata  
+Twój tata dzwoni  
+On samochód naprawiać tata  
+Jego tata naprawia samochód  
+My rower kupić wakacje  
+Kupię rower na wakacje  
+Wy zima góry jechać  
+Jedziecie w góry zimą  
+Oni babcia odwiedzał  
+Oni odwiedzają babcię  
+Ja okno zamykać  
+Zamykam okno  
+Ty kot patrzeć telewizor  
+Twój kot patrzy na telewizor  
+On ćwiczyć siłownia  
+Ćwiczy na siłowni  
+My książka czytać szkoła  
+Czytamy książkę w szkole  
+Wy kuchnia sprzątać  
+Sprzątacie kuchnię  
+Oni festiwal muzyka tańczyć  
+Tańczą na festiwalu muzyki  
+Ja wodę pić kiedy zęby myj  
+Pije wodę, kiedy myję zęby  
+Ty samochód myć wczoraj  
+Myłeś samochód wczoraj  
+On samolot latać  
+On lata samolotem  
+My komputer programować  
+Programujemy na komputerze  
+Wy zimować narty  
+Jeżdżę na nartach zimą  
+Oni książka wymieniać  
+Wymieniają książki  
+Ja liść grabić ogród  
+Grabię liście w ogrodzie  
+Ty siostra pomagać sprzątaczka  
+Pomagasz siostrze w sprzątaniu  
+Ona kino marzyć  
+Ona marzy o kinie  
+My rower do miasta jechać  
+Jedziemy rowerem do miasta  
+Wy pies suka na spacer prowadź  
+Prowadzicie psa na spacer  
+Oni samochód kupować razem  
+Kupują samochód razem  
+Ja gotować obiad rodzinny  
+Gotuję obiad dla rodziny  
+Ty ćwiczenia sportowe  
+Ćwiczysz sport  
+On muzyka fortepian grać  
+On gra na fortepianie  
+My pamiętać zakupy robić  
+Pamiętamy o robieniu zakupów  
+Wy zęby mycie po jedzeniu  
+Myjecie zęby po jedzeniu  
+Oni las grzyby zbierać  
+Zbierają grzyby w lesie  
+Ja piszę list babcia  
+Piszę list do babci  
+Ty pociąg wejść  
+Wchodzisz do pociągu  
+Ona biegać park co tydzień  
+Ona biega w parku co tydzień  
+My wakacje czekać lato  
+Czekamy na wakacje latem  
+Wy spacerować wieczór park  
+Spacerujecie wieczorem w parku  
+Oni książka czytać biblioteka  
+Czytają książki w bibliotece  
+Ja serce bije  
+Moje serce bije  
+Ty cukier dodawać herbata  
+Dodajesz cukier do herbaty  
+On oglądać mecz telewizja  
+On ogląda mecz w telewizji  
+My głośno śpiewać piosenka  
+Głośno śpiewamy piosenki  
+Wy muzeum odwiedzać wycieczka  
+Odwiedzacie muzeum na wycieczce  
+Oni słuchać muzyka samochód  
+Słuchają muzyki w samochodzie
+Ja dom wczoraj sprzątać
+Sprzątałem wczoraj dom
+On szkoła iść teraz
+On idzie teraz do szkoły
+My ciasto piec jutro
+Upieczemy ciasto jutro
+Ona lekarz być
+Ona jest lekarzem
+Ty zaraz jedzenie gotować?
+Czy zaraz będziesz gotować jedzenie?
+Dziecko piłka bawić
+Dziecko bawi się piłką
+My rower nowy kupić
+Kupiliśmy nowy rower
+On woda pić
+On pije wodę
+Ja film oglądać razem
+Oglądam film razem
+Szkoła dzieci dużo być
+W szkole jest dużo dzieci
+My spacer park
+Jesteśmy na spacerze w parku
+Ja książka czytać teraz
+Czytam teraz książkę
+Ty jutro praca iść?
+Czy jutro idziesz do pracy?
+On pies mieć
+On ma psa
+Ja miasto zakupy wczoraj
+Robiłem zakupy w mieście wczoraj
+Ty kawa chcieć?
+Czy chcesz kawy?
+My film wieczór oglądać
+Oglądamy film wieczorem
+Ona kot dom
+Ona ma kota w domu
+Ja muzeum być
+Byłem w muzeum
+On rower lubić
+On lubi jeździć rowerem
+Kiedy obiad gotować?
+Kiedy będziesz gotować obiad?
+Ja brat siostra widzieć
+Widziałem brata i siostrę
+Ona książka nowa mieć
+Ona ma nową książkę
+My urlop przyszły tydzień
+Jedziemy na urlop w przyszłym tygodniu
+Ona często spacer
+Ona często spaceruje
+Ty muzyka słuchać?
+Czy słuchasz muzyki?
+On dom nowy budować
+On buduje nowy dom
+My spacer park wczoraj
+Spacerowaliśmy w parku wczoraj
+Ja słońce lubić
+Lubię słońce
+Ty miasto lubić?
+Czy lubisz miasto?
+Ona komputer używać teraz
+Ona używa teraz komputera
+On samochód prowadzić
+On prowadzi samochód
+Ja woda pić teraz
+Piję teraz wodę
+Ty pies mieć?
+Czy masz psa?
+On góry wakacje
+On jedzie w góry na wakacje
+My spotkanie dzisiaj mieć
+Mamy spotkanie dzisiaj
+Ja przyjaciel restauracja
+Byłem z przyjacielem w restauracji
+Ona praca nauczyciel
+Ona pracuje jako nauczyciel
+Ty gdzie mieszkać?
+Gdzie mieszkasz?
+On rower jechać szybko
+On szybko jedzie rowerem
+Ja telefon dzwonić teraz
+Teraz dzwoni mój telefon
+My pociąg podróż
+Podróżujemy pociągiem
+Ona nie pies lubić
+Ona nie lubi psów
+Ty gazeta dzisiaj czytać?
+Czy czytałeś dzisiaj gazetę?
+Ja rodzina miłośny
+Kocham swoją rodzinę
+On rower codziennie
+On codziennie jeździ rowerem
+My wczoraj kino oglądać
+Oglądaliśmy film w kinie wczoraj
+Ja nowe ubrania kupić
+Kupiłem nowe ubrania
+Ona często książka czytać
+Ona często czyta książki
+On dom sprzątać teraz
+On sprząta teraz dom
+Ja woda pić dużo
+Piję dużo wody
+Ty jutro praca zaczynać?
+Czy jutro zaczynasz pracę?
+My wycieczka góry planować
+Planujemy wycieczkę w góry
+Ona muzyka głośno słuchać
+Ona głośno słucha muzyki
+On rower kupić wczoraj
+On kupił wczoraj rower
+Ja biegać park codziennie
+Codziennie biegam w parku
+Ty pies wyprowadzać?
+Czy wyprowadzasz psa?
+Ona lubić czytać książki
+Ona lubi czytać książki
+My morze lato jechać
+Latem jedziemy nad morze
+Ja telewizja nie lubić
+Nie lubię telewizji
+On restauracja jeść obiad
+On je obiad w restauracji
+Ty miasto odwiedzać?
+Czy odwiedzasz miasto?
+My dzisiaj zakupy
+Dzisiaj robimy zakupy
+Ona park codziennie spacerować
+Ona codziennie spaceruje w parku
+Ja słońce ciepły lubić
+Lubię, gdy słońce jest ciepłe
+Ty lubić oglądać filmy?
+Czy lubisz oglądać filmy?
+On komputer naprawiać
+On naprawia komputer
+My dom remontować
+Remontujemy dom
+Ja kota mieć
+Mam kota
+Ona szkoła często
+Ona często chodzi do szkoły
+Ty kiedy wycieczka góry?
+Kiedy jedziesz na wycieczkę w góry?
+On słońce nie lubić
+On nie lubi słońca
+Ja piłka grać park
+Gram w piłkę w parku
+Ona rower nowy chcieć
+Ona chce nowy rower
+Ty dzisiaj list pisać?
+Czy dzisiaj piszesz list?
+My park niedziela spacerować
+Spacerujemy po parku w niedzielę
+On często kino iść
+On często chodzi do kina
+Ja muzyka radio słuchać
+Słucham muzyki z radia
+Ona złoto biżuteria lubić
+Ona lubi złotą biżuterię
+Ty dom sprzątać?
+Czy sprzątasz dom?
+On telewizor oglądać
+On ogląda telewizor
+My obiad gotować sobota
+Gotujemy obiad w sobotę
+Ja bieganie rano lubić
+Lubię biegać rano
+Ona lubić zimno
+Ona lubi zimno
+Ty szkoła zajęcia dzisiaj?
+Czy masz dzisiaj zajęcia w szkole?
+On woda nie pić
+On nie pije wody
+My wieczór telefon rozmawiać
+Rozmawiamy przez telefon wieczorem
+On góry zimą zawsze jechać
+On zimą zawsze jedzie w góry
+Ty park rano biegać?
+Czy biegasz rano w parku?
+Ja przyjaciel dom wczoraj
+Byłem u przyjaciela wczoraj
+Ona zawsze woda pić
+Ona zawsze pije wodę
+On rower stary mieć
+On ma stary rower
+My restauracja kolacja
+Mamy kolację w restauracji
+Ja rower dom trzymać
+Trzymam rower w domu
+Ja rower naprawiać musieć  
+Muszę naprawić rower  
+Ty pizza chcieć jeść?  
+Chcesz zjeść pizzę?  
+Oni kino iść jutro  
+Oni idą jutro do kina  
+My pies spacer zostać  
+Zostaliśmy na spacerze z psem  
+Ja szkoła nie lubić  
+Nie lubię szkoły  
+Ona woda pić potrzebować  
+Ona potrzebuje pić wody  
+Wy kiedy wakacje mieć?  
+Kiedy macie wakacje?  
+On książka czytać codziennie  
+On codziennie czyta książkę  
+Ja wczoraj obiad gotować  
+Gotowałem wczoraj obiad  
+Ty muzyka słuchać?  
+Słuchasz muzyki?  
+My dom sprzątać razem  
+Razem sprzątamy dom  
+Oni film oglądać chcieć  
+Oni chcą oglądać film  
+Ja kolega spotkać przypadkowo  
+Spotkałem kolegę przypadkowo  
+Ona brat odwiedzić za tydzień  
+Ona odwiedzi brata za tydzień  
+Ty podróżować samolotem lubić?  
+Lubisz podróżować samolotem?  
+My dzisiaj wieczorem wyjść  
+Wyjdziemy dzisiaj wieczorem  
+On zadanie domowe robić  
+On robi zadanie domowe  
+Ja plany na weekend mieć  
+Mam plany na weekend  
+Ty pies szczekać słyszeć?  
+Słyszałeś szczekanie psa?  
+Ona nowa sukienka kupić  
+Ona kupiła nową sukienkę  
+My park spacerować  
+Spacerujemy w parku  
+On zimno czuć, sweter założyć  
+On czuł zimno, założył sweter  
+Ja ciasto piec na święta  
+Piekę ciasto na święta  
+Ty ostatecznie zgodzić się?  
+Zgodzisz się ostatecznie?  
+Oni lato nad morzem spędzać  
+Oni spędzają lato nad morzem  
+My quiz grać wygraliśmy  
+Wygraliśmy quiz  
+Ja pomoże tobie teraz  
+Pomogę ci teraz  
+Ona telefon zgubić w domu  
+Ona zgubiła telefon w domu  
+Ty rower pożyczać?  
+Pożyczasz rower?  
+My razem film oglądać?  
+Oglądamy razem film?  
+On nauka dużo czasu zajmować  
+Nauka zajmuje mu dużo czasu  
+Ja chory dziś, do lekarz iść  
+Jestem dziś chory, idę do lekarza  
+Ty czekasz na autobus?  
+Czekasz na autobus?  
+Oni wczoraj mecz wygrać  
+Wygrali wczoraj mecz  
+My zakupy zrobić jutro  
+Zrobimy jutro zakupy  
+Ona prezent dać niespodzianka  
+Ona dała prezent jako niespodzianka  
+Ja muzyka grać na gitarze  
+Gram muzykę na gitarze  
+Ty lubić czekolada?  
+Lubisz czekoladę?  
+Oni zdjęcia robić na plaży  
+Robią zdjęcia na plaży  
+My książka wypożyczyć z biblioteka  
+Wypożyczyliśmy książkę z biblioteki  
+On deszcz padać, parasolka brać  
+Padał deszcz, wziął parasolkę  
+Ja kot bawić się piłka  
+Bawię się z kotem piłką  
+Ty warsztaty uczestniczyć?  
+Uczestniczysz w warsztatach?  
+Ona popołudnie spacer park  
+Ona spacerowała po południu w parku  
+My pizza domowa przygotować  
+Przygotowujemy domową pizzę  
+On mama dzwonić telefon  
+Jego mama dzwoni do niego  
+Ja herbata pić z cukier  
+Piję herbatę z cukrem  
+Ty nowa kurtka kupić?  
+Czy kupiłeś nową kurtkę?  
+Oni kino film oglądać  
+Oni oglądali film w kinie  
+My pies wziąć na spacer  
+Wzięliśmy psa na spacer  
+Ja wczoraj spać źle  
+Spałem źle wczoraj  
+Ty mnie rozumieć?  
+Rozumiesz mnie?  
+Ona pieska patyk rzuć  
+Ona rzuciła patyk dla psa  
+My góry wakacje planować  
+Planujemy wakacje w górach  
+On komputer naprawić wczoraj  
+Naprawił komputer wczoraj  
+Ja woda pić nie chcieć  
+Nie chcę pić wody  
+Ty wczoraj książka czytać?  
+Czytałeś wczoraj książkę?  
+Oni dziś pizzy zamawiać  
+Zamówili dziś pizzę  
+My taniec lubić bardzo  
+Bardzo lubimy tańczyć  
+On nowy samochód kupić  
+On kupił nowy samochód  
+Ja niebo gwiazd patrzeć  
+Patrzę na gwiazdy na niebie  
+Ty domowe zwierzęta mieć?  
+Masz zwierzęta domowe?  
+Ona słoneczny dzień lubić  
+Ona lubi słoneczne dni  
+My weekend na działka spędzać  
+Spędzamy weekend na działce  
+On przyprawić zupa solą  
+On przyprawił zupę solą  
+Ja w lesie spacerować lubić  
+Lubię spacerować po lesie  
+Ty na film iść dziś wieczorem?  
+Idziesz na film dziś wieczorem?  
+Oni pies przytulać się  
+Przytulają się do psa  
+My nowy projekt rozpocząć  
+Rozpoczęliśmy nowy projekt  
+On domowy obiad zjeść  
+On zjadł domowy obiad  
+Ja wakacje nad morzem spędzać  
+Spędzam wakacje nad morzem  
+Ty list napisać mama?  
+Napisałeś list do mamy?  
+Ona kotek zaopiekować się  
+Ona zaopiekowała się kotem  
+My woda kąpielowo wejść  
+Weszliśmy do wody kąpielowej  
+On słońce świecić rano  
+Słońce świeci rano  
+Ja wieczór film oglądać  
+Oglądam film wieczorem  
+Ty planować urlop nad morzem?  
+Planowałeś urlop nad morzem?  
+Oni zaprosić przyjaciele na kolacja  
+Zaprosili przyjaciół na kolację  
+My deszcz spacerować park  
+Spacerujemy w parku mimo deszczu  
+On klucz zgubić w domu  
+Zgubił klucz w domu  
+Ja przyjść do ciebie w sobotę  
+Przyjdę do ciebie w sobotę  
+Ty film obejrzeć w kinie?  
+Obejrzałeś film w kinie?  
+Oni telefon dzwonić do przyjaciel  
+Dzwonili do przyjaciela  
+My wieczór wspólnie grać gry  
+Gramy wspólnie w gry wieczorem  
+Ja pilot samolot być marzenie  
+Marzyłem, aby zostać pilotem samolotu  
+Ty kiedy ostatni sklep być?  
+Kiedy ostatnio byłeś w sklepie?  
+On nie szkoła iść dziś  
+On dzisiaj nie poszedł do szkoły  
+My dom nowy kupić plan  
+Planujemy kupić nowy dom  
+Ona gotować obiad dla rodzina  
+Ona gotuje obiad dla rodziny  
+Wczoraj ja kino film oglądać  
+Wczoraj oglądałem film w kinie  
+Dzień dobry, ja nazywać jak?  
+Dzień dobry, jak się nazywasz?  
+Ty kot mieć czy pies?  
+Czy masz kota czy psa?  
+Ja książka interesująca czytać  
+Czytałem interesującą książkę  
+On mówić po angielski dobrze  
+On dobrze mówi po angielsku  
+Ja mama wczoraj spotkać  
+Spotkałem wczoraj moją mamę  
+Ty numer telefon dać mi?  
+Czy dasz mi swój numer telefonu?  
+Ona muzyka słuchać teraz  
+Ona teraz słucha muzyki  
+Dziś ja dużo pracować  
+Dzisiaj dużo pracowałem  
+Jutro ja na wycieczka jechać  
+Jutro jadę na wycieczkę  
+Ty wiedzieć, gdzie on mieszka?  
+Czy wiesz, gdzie on mieszka?  
+On nie komputer używać nigdy  
+On nigdy nie używał komputera  
+My razem impreza planować  
+Planujemy razem imprezę  
+Ja pytanie mieć ważny  
+Mam ważne pytanie  
+Ona woda pić dużo  
+Ona pije dużo wody  
+Ty wczoraj kawiarnia być?  
+Czy byłeś wczoraj w kawiarni?  
+Ja nauka język migowy  
+Uczę się języka migowego  
+On grać w piłka nożna lubić  
+On lubi grać w piłkę nożną  
+Ty kiedyś góra wspinać się?  
+Czy kiedykolwiek wspinałeś się na górę?  
+Ona w sierpień wakacje mieć  
+Ona ma wakacje w sierpniu  
+Dziecko cukierki jeść lubić  
+Dziecko lubi jeść cukierki  
+On zawsze muzyka grać  
+On zawsze gra muzykę  
+Ty rower mieć?  
+Czy masz rower?  
+Ja zwiedzać nowe miasto lubić  
+Lubię zwiedzać nowe miasta  
+Ona książka pisać teraz  
+Ona pisze teraz książkę  
+Jutro ja siostra odwiedzać  
+Jutro odwiedzam moją siostrę  
+My razem film oglądać  
+Oglądamy razem film  
+Ty chcieć kawa wypić?  
+Chcesz napić się kawy?  
+On koncert zaraz grać  
+On zaraz gra koncert  
+Ja nie lubić deszcz  
+Nie lubię deszczu  
+Ty kino często chodzić?  
+Czy często chodzisz do kina?  
+Ona kot na imię jak?  
+Jak się nazywa jej kot?  
+Ja wczoraj długo spać  
+Wczoraj spałem długo  
+On pies wyprowadzać teraz  
+On teraz wyprowadza psa  
+Ty jaka pogoda lubić?  
+Jaką pogodę lubisz?  
+Ja weekend góra jechać  
+W weekend jadę w góry  
+My planować podróż wspólny  
+Planujemy wspólną podróż  
+Dziś słońce świecić mocno  
+Dzisiaj mocno świeci słońce  
+Ty grać na instrument umieć?  
+Czy umiesz grać na instrumencie?  
+On siostra odwiedzać teraz  
+On teraz odwiedza swoją siostrę  
+Ja czas wolny książka czytać  
+W wolnym czasie czytam książki  
+Ona nowy telefon kupić  
+Ona kupiła nowy telefon  
+Ty kiedyś pływać basen?  
+Czy kiedykolwiek pływałeś w basenie?  
+My razem spacer park  
+Spacerujemy razem po parku  
+Ja chcieć lepszy praca  
+Chcę lepszą pracę  
+On często telewizja oglądać  
+On często ogląda telewizję  
+Ty gdzie wczoraj być?  
+Gdzie byłeś wczoraj?  
+Ona rower jeździć dziś  
+Ona dzisiaj jeździła na rowerze  
+Ja siostra imieniny świętować  
+Świętuję imieniny mojej siostry  
+My razem kolacja gotować  
+Gotujemy razem kolację  
+Ty pamiętać, on imię?  
+Czy pamiętasz jego imię?  
+On książka ulubiona co?  
+Jaka jest jego ulubiona książka?  
+Ja wiosna kwiaty sadzić lubić  
+Lubię sadzić kwiaty na wiosnę  
+Ty lato morze jechać?  
+Czy jedziesz latem nad morze?  
+Ona nowy film oglądać  
+Ona ogląda nowy film  
+Ja szkoła zajęcia mieć teraz  
+Mam zajęcia w szkole teraz  
+Ty lubić zima?  
+Lubisz zimę?  
+On pływać dobrze umieć  
+On dobrze umie pływać  
+Ja komedia film oglądać  
+Oglądałem film komediowy  
+Ty uczyć się francuski?  
+Czy uczysz się francuskiego?  
+Ona spacer park lubić  
+Ona lubi spacerować po parku  
+Ja wakacje góra planować  
+Planuję wakacje w górach  
+My rodzina obiad wspólny  
+Jesteśmy na wspólnym obiedzie rodzinnym  
+Ty wycieczka kiedy mieć?  
+Kiedy masz wycieczkę?  
+On muzyka grać codziennie  
+On codziennie gra muzykę  
+Ja komputer praca dużo  
+Dużo pracuję na komputerze  
+Ty kiedyś teatr być?  
+Czy kiedykolwiek byłeś w teatrze?  
+Ona kwiaty kupić dziś  
+Ona kupiła dzisiaj kwiaty  
+Ja miasto nowy zwiedzać  
+Zwiedzam nowe miasto  
+Ty rower codziennie jeździć?  
+Czy codziennie jeździsz na rowerze?  
+On sport uprawiać regularnie  
+On regularnie uprawia sport  
+My razem film wieczór  
+Oglądamy razem film wieczorem  
+Ja grać w zeszły tydzień  
+Grałem w zeszłym tygodniu  
+Ty wiedzieć, ona kiedy iść?  
+Wiesz, kiedy ona idzie?  
+Ona lubić słuchać muzyka  
+Ona lubi słuchać muzyki  
+Ja tata wczoraj dzwonić  
+Wczoraj dzwonił mój tata  
+My razem wycieczka plan  
+Planujemy razem wycieczkę  
+Ty chcieć coś pić?  
+Chcesz coś do picia?  
+On nie dom dziś być  
+On dzisiaj nie jest w domu  
+Ja gotować nowy przepis  
+Gotuję według nowego przepisu  
+Ty telewizja oglądać często?  
+Czy często oglądasz telewizję?  
+Ona siostra ma na imię jak?  
+Jak ma na imię jej siostra?  
+Ja sobota zakupy robić  
+W sobotę robię zakupy  
+Dziś on urodziny obchodzić  
+On dzisiaj obchodzi urodziny  
+My weekend razem spędzać  
+Spędzamy razem weekend  
+Ty powiedz mi, co robić?  
+Powiedz mi, co robisz?  
+On biuro pracować teraz  
+On teraz pracuje w biurze  
+Ja książka interesujący znaleźć  
+Znalazłem interesującą książkę  
+Ty lekcja język mieć kiedy?  
+Kiedy masz lekcję języka?  
+Ona film romantyczny oglądać  
+Ona ogląda film romantyczny  
