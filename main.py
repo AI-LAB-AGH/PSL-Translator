@@ -130,13 +130,7 @@ def main():
             results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         display_results(results, actions)
     
-    if model_type == 'ConvLSTM':
-        inference_optical_flow(model, actions, transform=ExtractOpticalFlow())
-    elif model_type == 'Forecaster':
-        loader = RTMPDataset(root_dir_test)
-        separate_sample(model, transform, loader)
-    else:
-        inference(model, label_map, transform)
+    inference(model, label_map, transform)
 
 if __name__ == "__main__":
     main()
