@@ -20,7 +20,7 @@ def draw_landmarks(img, holistic) -> cv2.UMat:
 
 def inference(model, label_map, transform):
     actions = dict([(value, key) for key, value in label_map.items()])
-    window_width = 100
+    window_width = 60
     tokens = ['' for _ in range(window_width)]
     threshold = 1.0
     
@@ -59,8 +59,9 @@ def inference(model, label_map, transform):
 
         # --- Based on the mode of last `window_width` predictions
         tokens.append(action_text)
-        tokens.pop(0)
-        print(f'\r{dumb_decode(tokens)}')
+        decoded = dumb_decode(tokens)
+        for token in decoded:
+            tokens.remove(token)
 
         # --- Visualization ---
         # img = draw_landmarks(img, holistic)
@@ -75,6 +76,7 @@ def inference(model, label_map, transform):
         else:
             print('\r'+ ' ' * 100, end='')
             print(f'Unknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}')
+        print(f'\r{decoded}', end='')
 
         # Show image
         cv2.imshow('Camera', img)
@@ -86,7 +88,6 @@ def inference(model, label_map, transform):
 
 
 def ctc_decode(sequence, blank_token='_'):
-    print(sequence)
     decoded_output = []
     
     previous_token = None
@@ -98,19 +99,20 @@ def ctc_decode(sequence, blank_token='_'):
     return decoded_output
 
 
-def dumb_decode(sequence, window_width=10):
+def dumb_decode(sequence, window_width=15):
     previous_token = sequence[0]
     current_count = 1
+    clean_sequence = []
     
     for idx, token in enumerate(sequence):
         if token != previous_token:
-            if current_count < window_width:
-                second = sequence[idx+1:]
-                first = sequence[:idx-current_count+1]
-                sequence = first + second
-                current_count = 1
+            if current_count >= window_width:
+                clean_sequence += sequence[idx-current_count+1:idx+1]
+            current_count = 1
         else:
             current_count += 1
         previous_token = token
+    if current_count >= window_width:
+        clean_sequence += sequence[idx-current_count+1:idx+1]
     
-    return ctc_decode(sequence)
+    return ctc_decode(clean_sequence)
