@@ -18,61 +18,11 @@ def draw_landmarks(img, holistic) -> cv2.UMat:
     return img
 
 
-def separate_sample(model, transform, test_loader, threshold=0.005):
-    mse = torch.nn.MSELoss()
-    model.initialize_cell_and_hidden_state()
-    idx = random.randint(0, len(test_loader)-1)
-    dir = f'F:/test/KSPJM/test/{idx*5}'
-    frames = sorted([frame for frame in os.listdir(dir)])
-
-    x = []
-    y = []
-    avg = []
-    window = 10
-    print(f'Sample index: {idx}. Processing...')
-    for i in range(len(frames) - 1):
-        img = cv2.imread(os.path.join(dir, frames[i]))
-        next = cv2.imread(os.path.join(dir, frames[i+1]))
-
-        x = transform([img])
-        x = torch.tensor(x[0], dtype=torch.float32)
-        x = x.view(1, 133, 2)
-
-        next = transform([next])
-        next = torch.tensor(next[0], dtype=torch.float32)
-        next = next.view(133, 2)
-    
-        outputs = model(x)
-        outputs = outputs.view(outputs.shape[1] // 2, 2)
-        loss = mse(outputs, next)
-
-        y.append(loss.item())
-        print(i)
-
-    for i in range(len(frames) - 1):
-        img = cv2.imread(os.path.join(dir, frames[i]))
-        overlay = img.copy()
-        overlay[:] = (0, 0, 255)
-        cv2.addWeighted(overlay, y[i] / max(y), img, 1 - y[i]/max(y), 0, img)
-    
-        cv2.imshow("Video", img)
-        key = cv2.waitKey(10)
-        if key == ord('q'):
-            break
-
-    for frame in range(len(y)-window):
-        x.append(frame)
-        avg.append(sum(y[frame:frame+window]) / window)
-
-    plt.plot(x, avg)
-    plt.show()
-
-
 def inference(model, label_map, transform):
     actions = dict([(value, key) for key, value in label_map.items()])
-    window_width = 10
+    window_width = 60
     tokens = ['' for _ in range(window_width)]
-    threshold = 0.9
+    threshold = 1.0
     
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -96,19 +46,22 @@ def inference(model, label_map, transform):
         output = model(x)
 
         # Pass input through network
-        output[0] = torch.nn.functional.softmax(output[0])
-        confidence, predicted_index = torch.max(output, dim=1)
-        predicted_action = actions[predicted_index.item()]
+        output = torch.nn.functional.softmax(output[0])
+        confidences, predicted_indices = torch.topk(output, 3)
+        # print(f'Predicted: {[(actions[index.item()], confidence.item()) for index, confidence in zip(predicted_indices, confidences)]}')
+        confidence = confidences[0]
+        predicted_action = actions[predicted_indices[0].item()]
 
         # Output the recognized action
         # --- Based on threshold ---
-        action_text = f'{predicted_action}' if confidence > threshold else action_text
+        action_text = f'{predicted_action}'
+        # action_text = f'{predicted_action}' if confidence > threshold else action_text
 
         # --- Based on the mode of last `window_width` predictions
         tokens.append(action_text)
-        tokens.pop(0)
-        token = max(set(tokens), key=tokens.count)
-        # print(f'\r{tokens}', end='')
+        decoded = dumb_decode(tokens)
+        for token in decoded:
+            tokens.remove(token)
 
         # --- Visualization ---
         # img = draw_landmarks(img, holistic)
@@ -119,10 +72,11 @@ def inference(model, label_map, transform):
             # --- Resetting LSTM states upon reaching threshold ---
             model.initialize_cell_and_hidden_state()
             print('\r'+ ' ' * 100, end='')
-            print(f'\rRecognized action: {predicted_action} with confidence: {confidence.item():.2f}', end='')
+            print(f'Recognized action: {predicted_action} with confidence: {confidence.item():.2f}')
         else:
             print('\r'+ ' ' * 100, end='')
-            print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
+            print(f'Unknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}')
+        print(f'\r{decoded}', end='')
 
         # Show image
         cv2.imshow('Camera', img)
@@ -133,62 +87,32 @@ def inference(model, label_map, transform):
     cv2.destroyAllWindows()
 
 
-def inference_optical_flow(model, actions, transform):
-    cap = cv2.VideoCapture(0)
-    if not cap.isOpened():
-        print("Cannot access camera.")
-        exit()
+def ctc_decode(sequence, blank_token='_'):
+    decoded_output = []
+    
+    previous_token = None
+    for token in sequence:
+        if token != blank_token and token != previous_token:
+            decoded_output.append(token)
+        previous_token = token
+    
+    return decoded_output
 
-    model.initialize_cell_and_hidden_state()
-    action_text = ""
 
-    # Grab first frame so that there are 2 of them to process at the first inference step
-    success, img = cap.read()
-    if not success:
-        print("Failed to capture image.")
-        return False
-    cv2.putText(img, action_text, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-    cv2.imshow('Camera', img)
-    cv2.waitKey(1)
-
-    prev = img
-
-    while True:
-        # Grab current frame
-        success, img = cap.read()
-        if not success:
-            print("Failed to capture image.")
-            return False
-        cv2.putText(img, action_text, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-        cv2.imshow('Camera', img)
-
-        curr = img
-
-        # Extract optical flow
-        flow = transform(prev, curr)
-
-        # Pass input through network
-        output = model(flow)
-        output[0] = torch.nn.functional.softmax(output[0])
-        confidence, predicted_index = torch.max(output, dim=1)
-        predicted_action = actions[predicted_index.item()]
-
-        # Output the recognized action
-        if confidence > 0.6:
-            action_text = f'{predicted_action}'
-            print('\r'+ ' ' * 100, end='')
-            print(f'\rRecognized action: {predicted_action} with confidence: {confidence.item():.2f}', end='')
+def dumb_decode(sequence, window_width=15):
+    previous_token = sequence[0]
+    current_count = 1
+    clean_sequence = []
+    
+    for idx, token in enumerate(sequence):
+        if token != previous_token:
+            if current_count >= window_width:
+                clean_sequence += sequence[idx-current_count+1:idx+1]
+            current_count = 1
         else:
-            print('\r'+ ' ' * 100, end='')
-            print(f'\rUnknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}', end='')
-
-        prev = curr
-
-        # Show image
-        cv2.imshow('Camera', img)
-        cv2.waitKey(1)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
+            current_count += 1
+        previous_token = token
+    if current_count >= window_width:
+        clean_sequence += sequence[idx-current_count+1:idx+1]
+    
+    return ctc_decode(clean_sequence)
