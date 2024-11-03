@@ -5,6 +5,8 @@ import random
 import mediapipe as mp
 import matplotlib.pyplot as plt
 
+from translation.translator import Translator
+
 def draw_landmarks(img, holistic) -> cv2.UMat:
     img = cv2.flip(img, 1)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -22,7 +24,7 @@ def inference(model, label_map, transform):
     actions = dict([(value, key) for key, value in label_map.items()])
     window_width = 60
     tokens = ['' for _ in range(window_width)]
-    threshold = 1.0
+    threshold = 0.9
     
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -31,6 +33,12 @@ def inference(model, label_map, transform):
 
     model.initialize_cell_and_hidden_state()
     action_text = ""
+    out = []
+    prev = ''
+
+    translator = Translator()
+
+    translation = ''
 
     while True:
         # Grab frame
@@ -54,8 +62,8 @@ def inference(model, label_map, transform):
 
         # Output the recognized action
         # --- Based on threshold ---
-        action_text = f'{predicted_action}'
-        # action_text = f'{predicted_action}' if confidence > threshold else action_text
+        #action_text = f'{predicted_action}'
+        action_text = f'{predicted_action}' if confidence > threshold else action_text
 
         # --- Based on the mode of last `window_width` predictions
         tokens.append(action_text)
@@ -63,20 +71,31 @@ def inference(model, label_map, transform):
         for token in decoded:
             tokens.remove(token)
 
+        if decoded and decoded[-1] != prev:
+            out.append(decoded[-1])
+            prev = decoded[-1]
+
         # --- Visualization ---
         # img = draw_landmarks(img, holistic)
 
         img = cv2.putText(img, action_text, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, int(confidence * 255), int(255 - confidence * 255)), 2, cv2.LINE_AA)
+        if translation:
+            img = cv2.putText(img, translation, (50, 400), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 100, 0), 2, cv2.LINE_AA)
 
         if confidence > threshold:
             # --- Resetting LSTM states upon reaching threshold ---
             model.initialize_cell_and_hidden_state()
-            print('\r'+ ' ' * 100, end='')
-            print(f'Recognized action: {predicted_action} with confidence: {confidence.item():.2f}')
-        else:
-            print('\r'+ ' ' * 100, end='')
-            print(f'Unknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}')
-        print(f'\r{decoded}', end='')
+            # print('\r'+ ' ' * 100, end='')
+            # print(f'Recognized action: {predicted_action} with confidence: {confidence.item():.2f}')
+        # else:
+        #     print('\r'+ ' ' * 100, end='')
+        #     print(f'Unknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}')
+        #print(f'{decoded}')
+        print(f'{out}') 
+        
+        if len(out) == 3 and not translation:
+            translation = translator.translate(out)
+            print(translation)
 
         # Show image
         cv2.imshow('Camera', img)
