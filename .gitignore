@@ -179,3 +179,4 @@ data_old/
 notebooks*
 /data
 bfg-1.14.0.jar
+translation/models/pretrained_models/allegro/plt5-large/checkpoint/model.safetensors
