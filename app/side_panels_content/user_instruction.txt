@@ -1,0 +1,12 @@
+User Instructions for the Polish Sign Language Translation App
+Launch the App: Open the Polish Sign Language Translation App on your device.
+
+Enable Camera Access: Upon opening, the app will prompt you to grant camera access. Click "Allow" to enable live video input, essential for recognizing and translating gestures.
+
+Position Your Hands: Stand or sit in front of the camera, positioning your hands within the frame so the app can clearly capture your gestures. Ensure there’s adequate lighting for optimal recognition.
+
+Start Gesturing: Begin signing using Polish Sign Language (PJM) gestures. The app will continuously process and translate recognized gestures into written text displayed on the screen.
+
+Adjust if Needed: If translation accuracy seems off, try repositioning your hands within the frame or adjusting lighting conditions.
+
+End Session: To stop the translation session, simply close the app or disable the camera feed by selecting the “End” button.

@@ -1,0 +1,57 @@
+QLabel#title_widget {
+    background-color: #C1A156;
+    color: white;
+    font-weight: bold;
+    font-size: 32px;
+    padding-top: 25px;
+    padding-left: 20px;
+}
+
+QLabel#subtitle_widget {
+    background-color: #C1A156;
+    color: white;
+    font-size: 16px;
+    padding-bottom: 25px;
+    padding-left: 25px;
+    box-shadow: 0 4px 2px -2px gray;
+}
+
+
+QListWidget#main_menu {
+    background-color: #243A57;
+    color: white;
+    padding-top: 20px;
+    font-size: 18px;
+}
+
+ QListWidget#main_menu::item {
+    padding-left: 20px;
+    padding-top: 10px;
+    background-color: #243A57;
+}
+
+QListWidget#main_menu::item:selected {
+    text-decoration: underline;
+    font-weight: bold;
+    padding-left: 25px;
+    shadow: 0 4px 2px -2px gray;
+}
+
+QListWidget#main_menu::item:hover {
+    font-weight: bold;
+    padding-left: 30px;
+    text-decoration: underline;
+    shadow: 0 4px 2px -2px gray;
+}
+
+QPushButton {
+    background-color: #C1A156;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 10px;
+    width: 70px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
