@@ -1,13 +1,14 @@
 from PyQt5.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QDesktopWidget, QSizePolicy, QPushButton, QSpacerItem, QGraphicsDropShadowEffect
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import Qt, QTimer
-from app.components.video_capture import VideoCapture
-from app.components.menu_component import MenuComponent
+from components.video_capture import VideoCapture
+from components.menu_component import MenuComponent
 import cv2
-from app.components.side_panel import SidePanel
-from app.helpers.format_sentence import format_sentence
+from components.side_panel import SidePanel
+from helpers.format_sentence import format_sentence
 from PyQt5.QtGui import QFont, QFontDatabase
-from app.assets.shadow_effect import shadow_effect
+from assets.shadow_effect import shadow_effect
+
 
 class MainWindow(QMainWindow):
     def __init__(self, prediction_handler, transform):

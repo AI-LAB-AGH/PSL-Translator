@@ -1,14 +1,15 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from app.main_window import MainWindow
+from main_window import MainWindow
 import os
 import json
 import numpy as np
-from app.model_LSTM_transformer import LSTMTransformerModel
+from model_LSTM_transformer import LSTMTransformerModel
 import torch
-from app.helpers.gesture_recognition_handler import GestureRecognitionHandler
+from helpers.gesture_recognition_handler import GestureRecognitionHandler
 from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
 from preprocessing.transforms import ExtractLandmarksWithRTMP
+
 
 def load_stylesheet(app, file_path="app/assets/styles.qss"):
     with open(file_path, "r") as file:
