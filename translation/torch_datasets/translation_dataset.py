@@ -27,7 +27,7 @@ class TranslationDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        sample = self.data[idx][0]
+        sample = f"Przetłumacz zdanie z polskiego języka migowego na polski: {self.data[idx][0]} cel: "
         target = self.data[idx][1]
         if self.transform:
             sample = self.transform(sample)
