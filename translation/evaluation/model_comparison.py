@@ -35,16 +35,14 @@ def evaluate_transformer(model_path, tokenizer_name, data_path):
 
 def main():
     results = []
-    results.append(evaluate_hf_model("translation/models/pretrained_models/mt5-base/checkpoint",
-                            "google/mt5-base", "translation/nlp_data/test_data.txt"))
-    results.append(evaluate_hf_model("translation/models/pretrained_models/allegro/plt5-base/checkpoint",
-                            "allegro/plt5-base", "translation/nlp_data/test_data.txt"))
     results.append(evaluate_hf_model("translation/models/pretrained_models/allegro/plt5-large/checkpoint",
-                            "allegro/plt5-large", "translation/nlp_data/test_data.txt"))
+                            "allegro/plt5-large", "translation/nlp_data/test_data.txt")),
+    results.append(evaluate_hf_model("translation/models/pretrained_models/allegro/plt5-large-more-data/checkpoint",
+                                     "allegro/plt5-large", "translation/nlp_data/test_data.txt"))
 
     df = pd.DataFrame(results)
     df.set_index("model_name", inplace=True)
-    df.to_csv("model_comparison.csv")
+    df.to_csv("model_comparison_2.csv")
 
 
 if __name__ == "__main__":
