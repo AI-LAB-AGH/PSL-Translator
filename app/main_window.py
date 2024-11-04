@@ -1,12 +1,10 @@
+import cv2
 from PyQt5.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QDesktopWidget, QSizePolicy, QPushButton, QSpacerItem, QGraphicsDropShadowEffect
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap, QFont, QFontDatabase
 from PyQt5.QtCore import Qt, QTimer
 from app.components.video_capture import VideoCapture
 from app.components.menu_component import MenuComponent
-import cv2
 from app.components.side_panel import SidePanel
-from app.helpers.format_sentence import format_sentence
-from PyQt5.QtGui import QFont, QFontDatabase
 from app.assets.shadow_effect import shadow_effect
 
 class MainWindow(QMainWindow):
@@ -38,7 +36,6 @@ class MainWindow(QMainWindow):
         self.reset_text_timer.timeout.connect(self.reset_recognized_text)
 
         self.recognized_gestures = []
-        self.current_output = []
         
     def init_ui(self):
         self.video_label = QLabel(self)
@@ -99,31 +96,39 @@ class MainWindow(QMainWindow):
     def update_video_label(self, frame):
         mirrored_frame = cv2.flip(frame, 1)
         if self.is_running:
-            recognized_action, confidence, output = self.prediction_handler.process_frame(frame)
-            self.current_output = output
-            # print('output: ', output)
-            # print('self.current_output: ', self.current_output)
+            result, confidence, result_type = self.prediction_handler.process_frame(frame)
             
-            if recognized_action is not None:
-                self.recognized_gestures.append(f"{recognized_action}")
-                self.video_capture.set_recognized_text(recognized_action)
-                
-                self.reset_text_timer.start()
-
-            if self.video_capture.recognized_text:
-                thickness = 2
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                font_scale = 1
-                position = (mirrored_frame.shape[1] - 10 - cv2.getTextSize(self.video_capture.recognized_text, font, font_scale, thickness)[0][0], 30)
-                font_scale = 1
-                color = (255, 255, 255)
-                cv2.putText(mirrored_frame, self.video_capture.recognized_text, position, font, font_scale, color, thickness, cv2.LINE_AA)
-
+            if result is not None:
+                if result_type == 'gesture':
+                    self.recognized_gestures.append(result)
+                    self.video_capture.set_recognized_text(result)
+                    self.reset_text_timer.start()
+                    
+                    thickness = 2
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    font_scale = 1
+                    text = self.video_capture.recognized_text
+                    text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
+                    position = (mirrored_frame.shape[1] - text_size[0] - 10, text_size[1] + 10)
+                    color = (255, 255, 255)
+                    cv2.putText(mirrored_frame, text, position, font, font_scale, color, thickness, cv2.LINE_AA)
+                elif result_type == 'translation':
+                    if result != '':
+                        self.sentence_label.setText(result)
+                    self.recognized_gestures.clear()
+                    self.video_capture.set_recognized_text('')
+            else:
+                self.video_capture.set_recognized_text('')
+        else:
+            self.video_capture.set_recognized_text('')
+        
         mirrored_frame_rgb = cv2.cvtColor(mirrored_frame, cv2.COLOR_BGR2RGB)
         height, width, channel = mirrored_frame_rgb.shape
         bytes_per_line = 3 * width
         q_image = QImage(mirrored_frame_rgb.data, width, height, bytes_per_line, QImage.Format_RGB888)
         self.video_label.setPixmap(QPixmap.fromImage(q_image))
+
+
 
     def reset_recognized_text(self):
         self.video_capture.set_recognized_text("")
@@ -135,13 +140,8 @@ class MainWindow(QMainWindow):
         
         if self.is_running:
             self.recognized_gestures.clear()
-            self.current_output.clear()
             self.sentence_label.setText("")
             self.reset_text_timer.start()
-        else:
-            # TODO: Translate sentence
-            print('formated: ', format_sentence(self.current_output))
-            self.sentence_label.setText(format_sentence(self.current_output))
 
     def closeEvent(self, event):
         self.video_capture.release()
