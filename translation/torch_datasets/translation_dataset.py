@@ -1,5 +1,5 @@
 from torch.utils.data import Dataset
-
+import random
 
 class TranslationDataset(Dataset):
 
@@ -22,6 +22,8 @@ class TranslationDataset(Dataset):
         elif type(file_paths) in (list, tuple):
             for file_path in file_paths:
                 read_from_file(file_path)
+
+        random.shuffle(self.data)
 
     def __len__(self):
         return len(self.data)
