@@ -24,7 +24,7 @@ def inference(model, label_map, transform):
     actions = dict([(value, key) for key, value in label_map.items()])
     window_width = 60
     tokens = ['' for _ in range(window_width)]
-    threshold = 0.9
+    threshold = 0.6
     
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -62,14 +62,15 @@ def inference(model, label_map, transform):
 
         # Output the recognized action
         # --- Based on threshold ---
-        #action_text = f'{predicted_action}'
+        # action_text = f'{predicted_action}'
         action_text = f'{predicted_action}' if confidence > threshold else action_text
 
         # --- Based on the mode of last `window_width` predictions
         tokens.append(action_text)
         decoded = dumb_decode(tokens)
         for token in decoded:
-            tokens.remove(token)
+            if token in tokens:
+                tokens.remove(token)
 
         if decoded and decoded[-1] != prev:
             out.append(decoded[-1])
@@ -90,12 +91,16 @@ def inference(model, label_map, transform):
         # else:
         #     print('\r'+ ' ' * 100, end='')
         #     print(f'Unknown action. Most likely: {predicted_action} with confidence: {confidence.item():.2f}')
-        #print(f'{decoded}')
-        print(f'{out}') 
+        print(f'{decoded}')
+        # print(out)
         
-        if len(out) == 3 and not translation:
+        if len(out) > 1 and out[-1] == 'blank' and not translation:
+            while 'blank' in out:
+                out.remove('blank')
             translation = translator.translate(out)
             print(translation)
+            translation = ''
+            out = []
 
         # Show image
         cv2.imshow('Camera', img)
@@ -118,20 +123,27 @@ def ctc_decode(sequence, blank_token='_'):
     return decoded_output
 
 
-def dumb_decode(sequence, window_width=15):
+def dumb_decode(sequence, min_window_width=15, max_window_width=60):
     previous_token = sequence[0]
     current_count = 1
     clean_sequence = []
     
     for idx, token in enumerate(sequence):
         if token != previous_token:
-            if current_count >= window_width:
-                clean_sequence += sequence[idx-current_count+1:idx+1]
+            if current_count >= min_window_width:
+                if current_count < max_window_width:
+                    clean_sequence += sequence[idx-current_count+1:idx+1]
+                # else:
+                #     clean_sequence += ['blank' for _ in range(current_count)]
+
             current_count = 1
         else:
             current_count += 1
         previous_token = token
-    if current_count >= window_width:
-        clean_sequence += sequence[idx-current_count+1:idx+1]
+    if current_count >= min_window_width:
+        if current_count < max_window_width:
+            clean_sequence += sequence[idx-current_count+1:idx+1]
+        # else:
+        #     clean_sequence += ['blank' for _ in range(current_count)]
     
     return ctc_decode(clean_sequence)

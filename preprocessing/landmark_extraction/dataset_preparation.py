@@ -42,10 +42,15 @@ def get_annotations(root_dir: str) -> tuple[dict, dict]:
 
 
 def preprocess_directory(root_dir: str, tgt_dir: str, annotations: dict, label_map: dict, extractor: LandmarkExtractor):
-    data = []
+    data_path = os.path.join(tgt_dir, 'data.pth')
+    data = torch.load(data_path)
+    print(f'{root_dir}: {len(data)} directories processed so far')
     num_dirs = len(os.listdir(root_dir))
     
-    for i, dir in enumerate(os.listdir(root_dir)):
+    for i, dir in enumerate(sorted(os.listdir(root_dir), key=lambda a: int(os.path.splitext(a)[0]))):
+        if i < len(data):
+            continue
+
         path = os.path.join(root_dir, dir)
         frames = sorted(os.listdir(path), key=lambda a: int(os.path.splitext(a)[0]))
         sample = [cv2.imread(os.path.join(path, frame)) for frame in frames]
@@ -60,9 +65,9 @@ def preprocess_directory(root_dir: str, tgt_dir: str, annotations: dict, label_m
         print(f'\rDirectory {i+1}/{num_dirs} processed', end='')
 
         if i % 100 == 0:
-            torch.save(data, os.path.join(tgt_dir, 'data.pth'))
+            torch.save(data, data_path)
 
-    torch.save(data, os.path.join(tgt_dir, 'data.pth'))
+    torch.save(data, data_path)
     data.clear()
 
 
