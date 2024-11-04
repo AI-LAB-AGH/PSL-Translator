@@ -1,65 +1,102 @@
 import torch
+import cv2
 import time
 
 class GestureRecognitionHandler:
-    def __init__(self, model, label_map, confidence_threshold=0.95, consecutive_frames=6):
+    def __init__(self, model, label_map, transform, confidence_threshold=0.95, window_width=60):
         self.model = model
-        self.actions = dict([(value, key) for key, value in label_map.items()])
+        self.actions = {value: key for key, value in label_map.items()}
+        self.transform = transform
         self.confidence_threshold = confidence_threshold
-        self.consecutive_frames = consecutive_frames
-        self.confidence_window = []
-        self.action_window = []
-        self.hands_visible_window = []
-
-        self.hand_left_indices = [idx for idx in range(91, 112)]
-        self.hand_right_indices = [idx for idx in range(112, 133)]
-
+        self.window_width = window_width
+        self.tokens = []
+        
         self.model.initialize_cell_and_hidden_state()
+        self.action_text = ""
+        self.out = []
+        self.prev = ''
+        self.no_gesture_frames = 0
 
-        self.last_action = ""
-        self.last_action_time = time.time()
-        self.action_display_duration = 1
+    def process_video(self):
+        cap = cv2.VideoCapture(0)
+        if not cap.isOpened():
+            print("Cannot access camera.")
+            return None
 
-    def process_frame(self, frame, transform):
-        x = transform([frame])
+        results = []
+        while True:
+            # Capture frame
+            success, img = cap.read()
+            if not success:
+                print("Failed to capture image.")
+                break
+
+            # Process frame
+            action_text, confidence = self.process_frame(img)
+            if action_text:
+                results.append((action_text, confidence))
+                
+            if cv2.waitKey(1) == 27:  # Press 'Esc' to stop
+                break
+
+        cap.release()
+        cv2.destroyAllWindows()
+        return results
+
+    def process_frame(self, frame):
+        x = self.transform([frame])
         x = torch.tensor(x[0], dtype=torch.float32)
         x = x.view(1, 133, 2)
-
+        
         output = self.model(x)
-        output[0] = torch.nn.functional.softmax(output[0])
-        confidence, predicted_index = torch.max(output, dim=1)
-        predicted_action = self.actions[predicted_index.item()]
+        output = torch.nn.functional.softmax(output[0])
+        confidences, predicted_indices = torch.topk(output, 3)
+        
+        confidence = confidences[0].item()
+        predicted_action = self.actions[predicted_indices[0].item()]
+        
+        action_text = predicted_action if confidence > self.confidence_threshold else self.action_text
+        
+        self.tokens.append(action_text)
+        decoded = self.dumb_decode(self.tokens)
+        
+        for token in decoded:
+            self.tokens.remove(token)
+        
+        if decoded and decoded[-1] != self.prev:
+            self.out.append(decoded[-1])
+            self.prev = decoded[-1]
 
-        result = x[0].clone().detach().numpy()
-        hands_visible = (
-            any(result[idx, 0] != 0 or result[idx, 1] != 0 for idx in self.hand_left_indices) or
-            any(result[idx, 0] != 0 or result[idx, 1] != 0 for idx in self.hand_right_indices)
-        )
-        self.hands_visible_window.append(hands_visible)
-
-        if len(self.hands_visible_window) > 5:
-            self.hands_visible_window.pop(0)
-
-        self.confidence_window.append(confidence.item())
-        self.action_window.append(predicted_action)
-
-        if len(self.confidence_window) > self.consecutive_frames:
-            self.confidence_window.pop(0)
-            self.action_window.pop(0)
-
-        if (len(self.confidence_window) == self.consecutive_frames and
-            all(c > self.confidence_threshold for c in self.confidence_window) and
-            len(set(self.action_window)) == 1):
+        if confidence > self.confidence_threshold:
             self.model.initialize_cell_and_hidden_state()
-            self.last_action = predicted_action
-            self.last_action_time = time.time()
-            return self.last_action, confidence.item()
 
-        if len(self.hands_visible_window) == 5 and not any(self.hands_visible_window):
-            self.model.initialize_cell_and_hidden_state()
-            self.hands_visible_window = []
+        print('output: ', self.out)
+        print('decoded: ', decoded)
+        return action_text, confidence, self.out
 
-        return None, None
+    def dumb_decode(self, sequence, window_width=15):
+        previous_token = sequence[0]
+        current_count = 1
+        clean_sequence = []
+        
+        for idx, token in enumerate(sequence):
+            if token != previous_token:
+                if current_count >= window_width:
+                    clean_sequence += sequence[idx - current_count + 1:idx + 1]
+                current_count = 1
+            else:
+                current_count += 1
+            previous_token = token
+        if current_count >= window_width:
+            clean_sequence += sequence[len(sequence) - current_count:]
+        
+        return self.ctc_decode(clean_sequence)
 
-    def reset_hidden_state(self):
-        self.model.initialize_cell_and_hidden_state()
+    def ctc_decode(self, sequence, blank_token='_'):
+        decoded_output = []
+        previous_token = None
+        for token in sequence:
+            if token != blank_token and token != previous_token:
+                decoded_output.append(token)
+            previous_token = token
+        return decoded_output

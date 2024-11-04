@@ -38,6 +38,7 @@ class MainWindow(QMainWindow):
         self.reset_text_timer.timeout.connect(self.reset_recognized_text)
 
         self.recognized_gestures = []
+        self.current_output = []
         
     def init_ui(self):
         self.video_label = QLabel(self)
@@ -98,7 +99,10 @@ class MainWindow(QMainWindow):
     def update_video_label(self, frame):
         mirrored_frame = cv2.flip(frame, 1)
         if self.is_running:
-            recognized_action, confidence = self.prediction_handler.process_frame(frame, self.transform)
+            recognized_action, confidence, output = self.prediction_handler.process_frame(frame)
+            self.current_output = output
+            # print('output: ', output)
+            # print('self.current_output: ', self.current_output)
             
             if recognized_action is not None:
                 self.recognized_gestures.append(f"{recognized_action}")
@@ -131,11 +135,13 @@ class MainWindow(QMainWindow):
         
         if self.is_running:
             self.recognized_gestures.clear()
+            self.current_output.clear()
             self.sentence_label.setText("")
             self.reset_text_timer.start()
         else:
-            self.sentence_label.setText(format_sentence(self.recognized_gestures))
-            print("recodnized", format_sentence(self.recognized_gestures))
+            # TODO: Translate sentence
+            print('formated: ', format_sentence(self.current_output))
+            self.sentence_label.setText(format_sentence(self.current_output))
 
     def closeEvent(self, event):
         self.video_capture.release()

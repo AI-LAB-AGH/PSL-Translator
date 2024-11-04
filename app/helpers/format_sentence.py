@@ -1,4 +1,5 @@
 def format_sentence(predictions):
+    # TODO: to be replaced with a proper translation
     unique_predictions = []
     previous_pred = None
 

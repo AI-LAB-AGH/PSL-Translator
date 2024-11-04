@@ -32,7 +32,7 @@ if __name__ == "__main__":
     model_path = 'app/LSTM-Transformer_RGB_more_copy_2_RTMP_.pth'
     model.load_state_dict(torch.load(model_path))
 
-    prediction_handler = GestureRecognitionHandler(model, label_map)
+    prediction_handler = GestureRecognitionHandler(model, label_map, transform)
 
     app = QApplication(sys.argv)
     load_stylesheet(app)
