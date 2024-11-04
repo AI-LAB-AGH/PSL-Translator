@@ -1,4 +1,5 @@
 import sys
+import argparse
 from PyQt5.QtWidgets import QApplication
 from app.main_window import MainWindow
 import os
@@ -15,12 +16,27 @@ def load_stylesheet(app, file_path="app/assets/styles.qss"):
     with open(file_path, "r") as file:
         app.setStyleSheet(file.read())
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_type', type=str, default='LSTM',
+                        help='Model type to use (LSTM, ConvLSTM, Transformer, LSTM-Transformer)')
+    parser.add_argument('--model_path', type=str, default='',
+                        help='Path to the model weights file')
+    parser.add_argument('--hidden_state', type=int, default=128,
+                        help='Hidden state dimension in the model')
+    parser.add_argument('--num_layers', type=int, default=1,
+                        help='Number of layers in the model')
+    parser.add_argument('--num_classes', type=int, default=None,
+                        help='Number of gesture classes (optional)')
+
+    return parser.parse_args()
+
 if __name__ == "__main__":
-    model_type = 'LSTM-Transformer'
-    # model_path = 'models/pretrained/LSTM_RGB_more_copy_2_RTMP_.pth'
-    model_path = 'models/pretrained/LSTM-Transformer_RGB_more_copy_no_augment_RTMP_.pth'
-    hidden_state = 128
-    num_layers = 1
+    args = get_args()
+    model_type = args.model_type
+    model_path = args.model_path
+    hidden_state = args.hidden_state
+    num_layers = args.num_layers
     
     extractor = RTMPoseDetector('preprocessing/landmark_extraction/end2end.onnx')
     transform = ExtractLandmarksWithRTMP(extractor)
