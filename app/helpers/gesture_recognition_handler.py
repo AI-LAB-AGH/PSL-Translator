@@ -1,65 +1,99 @@
 import torch
-import time
+import cv2
 
 class GestureRecognitionHandler:
-    def __init__(self, model, label_map, confidence_threshold=0.95, consecutive_frames=6):
+    def __init__(self, model, label_map, transform, confidence_threshold=0.9, window_width=60):
         self.model = model
-        self.actions = dict([(value, key) for key, value in label_map.items()])
+        self.actions = {value: key for key, value in label_map.items()}
+        self.transform = transform
         self.confidence_threshold = confidence_threshold
-        self.consecutive_frames = consecutive_frames
-        self.confidence_window = []
-        self.action_window = []
-        self.hands_visible_window = []
-
-        self.hand_left_indices = [idx for idx in range(91, 112)]
-        self.hand_right_indices = [idx for idx in range(112, 133)]
-
+        self.window_width = window_width
+        self.tokens = []
+        
         self.model.initialize_cell_and_hidden_state()
+        self.action_text = ""
+        self.out = []
+        self.prev = ''
+        self.no_gesture_frames = 0
 
-        self.last_action = ""
-        self.last_action_time = time.time()
-        self.action_display_duration = 1
-
-    def process_frame(self, frame, transform):
-        x = transform([frame])
+    def process_frame(self, frame):
+        x = self.transform([frame])
         x = torch.tensor(x[0], dtype=torch.float32)
         x = x.view(1, 133, 2)
-
+        
         output = self.model(x)
-        output[0] = torch.nn.functional.softmax(output[0])
-        confidence, predicted_index = torch.max(output, dim=1)
-        predicted_action = self.actions[predicted_index.item()]
+        output = torch.nn.functional.softmax(output[0], dim=0)
+        confidences, predicted_indices = torch.topk(output, 3)
+        
+        confidence = confidences[0].item()
+        predicted_action = self.actions[predicted_indices[0].item()]
+        
+        if confidence > self.confidence_threshold:
+            action_text = predicted_action
+            self.no_gesture_frames = 0 
+            self.tokens.append(action_text)
+            if action_text != self.prev:
+                self.out.append(action_text)
+                self.prev = action_text
+        else:
+            action_text = ''
+            self.no_gesture_frames += 1
+            self.tokens.append('_')
+            
+        if len(self.tokens) > self.window_width:
+            self.tokens.pop(0)
 
-        result = x[0].clone().detach().numpy()
-        hands_visible = (
-            any(result[idx, 0] != 0 or result[idx, 1] != 0 for idx in self.hand_left_indices) or
-            any(result[idx, 0] != 0 or result[idx, 1] != 0 for idx in self.hand_right_indices)
-        )
-        self.hands_visible_window.append(hands_visible)
-
-        if len(self.hands_visible_window) > 5:
-            self.hands_visible_window.pop(0)
-
-        self.confidence_window.append(confidence.item())
-        self.action_window.append(predicted_action)
-
-        if len(self.confidence_window) > self.consecutive_frames:
-            self.confidence_window.pop(0)
-            self.action_window.pop(0)
-
-        if (len(self.confidence_window) == self.consecutive_frames and
-            all(c > self.confidence_threshold for c in self.confidence_window) and
-            len(set(self.action_window)) == 1):
+        if self.no_gesture_frames >= 10:
+            translation = self.decode_and_translate()
+            self.no_gesture_frames = 0 
+            self.out = []
+            return translation, confidence, 'translation'
+        
+        if confidence > self.confidence_threshold:
             self.model.initialize_cell_and_hidden_state()
-            self.last_action = predicted_action
-            self.last_action_time = time.time()
-            return self.last_action, confidence.item()
+        
+        return action_text, confidence, 'gesture'
 
-        if len(self.hands_visible_window) == 5 and not any(self.hands_visible_window):
-            self.model.initialize_cell_and_hidden_state()
-            self.hands_visible_window = []
+    def decode_and_translate(self):
+        decoded = self.dumb_decode(self.tokens)
+        self.tokens = []
+        
+        if decoded:
+            translation = self.translate_gestures(decoded)
+            return translation
+        else:
+            return ''
 
-        return None, None
+    def dumb_decode(self, sequence, window_width=3):
+        previous_token = sequence[0]
+        current_count = 1
+        clean_sequence = []
+        
+        for idx, token in enumerate(sequence):
+            if token != previous_token:
+                if current_count >= window_width:
+                    clean_sequence += sequence[idx-current_count+1:idx+1]
+                current_count = 1
+            else:
+                current_count += 1
+            previous_token = token
+        if current_count >= window_width:
+            clean_sequence += sequence[idx-current_count+1:idx+1]
+        
+        return self.ctc_decode(clean_sequence)
 
-    def reset_hidden_state(self):
-        self.model.initialize_cell_and_hidden_state()
+    def ctc_decode(self, sequence, blank_token='_'):
+        decoded_output = []
+        
+        previous_token = None
+        for token in sequence:
+            if token != blank_token and token != previous_token:
+                decoded_output.append(token)
+            previous_token = token
+        
+        return decoded_output
+
+    def translate_gestures(self, gestures):
+        # TODO: add a proper translation
+        translation = ' '.join(gestures)
+        return translation

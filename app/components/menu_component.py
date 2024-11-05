@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QListWidget, QLabel, QWidget, QVBoxLayout, QListWidgetItem, QSizePolicy
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QFont, QFontDatabase
-from assets.shadow_effect import shadow_effect, bottom_shadow_effect
+from PyQt5.QtGui import QFont, QFontDatabase, QPainter, QPixmap
+from app.assets.shadow_effect import shadow_effect, bottom_shadow_effect
 
 class MenuComponent(QWidget):
     option_clicked = pyqtSignal(str)
@@ -49,6 +49,7 @@ class MenuComponent(QWidget):
         self.title_widget.setObjectName("title_widget")
         self.subtitle_widget.setObjectName("subtitle_widget")
         self.main_menu.setObjectName("main_menu")
+        self.setObjectName("MenuComponent")
         
         self.last_selected_item = None
         
@@ -79,3 +80,4 @@ class MenuComponent(QWidget):
 
     def on_about_project_click(self):
         pass
+    
