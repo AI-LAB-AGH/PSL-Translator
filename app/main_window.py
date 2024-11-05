@@ -4,8 +4,8 @@ from PyQt5.QtCore import Qt, QTimer
 from components.video_capture import VideoCapture
 from components.menu_component import MenuComponent
 import cv2
-from components.side_panel import SidePanel
-from helpers.format_sentence import format_sentence
+from app.components.side_panel import SidePanel
+from app.helpers.format_sentence import format_sentence
 from PyQt5.QtGui import QFont, QFontDatabase
 from assets.shadow_effect import shadow_effect
 

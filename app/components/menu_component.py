@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QListWidget, QLabel, QWidget, QVBoxLayout, QListWidgetItem, QSizePolicy
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QFontDatabase
-from app.assets.shadow_effect import shadow_effect, bottom_shadow_effect
+from assets.shadow_effect import shadow_effect, bottom_shadow_effect
 
 class MenuComponent(QWidget):
     option_clicked = pyqtSignal(str)
