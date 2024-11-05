@@ -7,15 +7,17 @@ class GestureRecognitionHandler:
         self.model = model
         self.actions = {value: key for key, value in label_map.items()}
         self.transform = transform
-        self.confidence_threshold = confidence_threshold
+        self.threshold = confidence_threshold
         self.window_width = window_width
-        self.tokens = []
         
         self.model.initialize_cell_and_hidden_state()
+        self.tokens = ['' for _ in range(window_width)]
         self.action_text = ""
         self.out = []
         self.prev = ''
         self.no_gesture_frames = 0
+        self.decoded = []
+        self.translation = ''
 
         self.translator = Translator()
 
@@ -30,32 +32,37 @@ class GestureRecognitionHandler:
         
         confidence = confidences[0].item()
         predicted_action = self.actions[predicted_indices[0].item()]
+
+        self.action_text = f'{predicted_action}' if confidence > self.threshold else self.action_text
+
+        # --- Based on the mode of last `window_width` predictions
+        self.tokens.append(self.action_text)
+        self.decoded = self.dumb_decode(self.tokens)
+        for token in self.decoded:
+            if token in self.tokens:
+                self.tokens.remove(token)
+
+        if self.decoded and self.decoded[-1] != self.prev:
+            self.out.append(self.decoded[-1])
+            self.prev = self.decoded[-1]
         
-        if confidence > self.confidence_threshold:
-            action_text = predicted_action
-            self.no_gesture_frames = 0 
-            self.tokens.append(action_text)
-            if action_text != self.prev:
-                self.out.append(action_text)
-                self.prev = action_text
-        else:
-            action_text = ''
-            self.no_gesture_frames += 1
-            self.tokens.append('_')
+        if confidence > self.threshold:
+            self.model.initialize_cell_and_hidden_state()
+            print(f'{self.decoded}')
+        
+        if len(self.out) > 1 and self.out[-1] == 'blank':
+            while 'blank' in self.out:
+                self.out.remove('blank')
+            self.translation = self.translator.translate(self.out)
+            print(self.translation)
+            #self.translation = ''
+            self.out = []
+            return self.translation, confidence, 'translation'
             
         if len(self.tokens) > self.window_width:
             self.tokens.pop(0)
-
-        if self.no_gesture_frames >= 10:
-            translation = self.decode_and_translate()
-            self.no_gesture_frames = 0 
-            self.out = []
-            return translation, confidence, 'translation'
         
-        if confidence > self.confidence_threshold:
-            self.model.initialize_cell_and_hidden_state()
-        
-        return action_text, confidence, 'gesture'
+        return self.action_text, confidence, 'gesture'
 
     def decode_and_translate(self):
         decoded = self.dumb_decode(self.tokens)

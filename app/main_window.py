@@ -113,8 +113,7 @@ class MainWindow(QMainWindow):
                     text = self.video_capture.recognized_text
                     text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
                     position = (mirrored_frame.shape[1] - text_size[0] - 10, text_size[1] + 10)
-                    color = (255, 255, 255)
-                    cv2.putText(mirrored_frame, text, position, font, font_scale, color, thickness, cv2.LINE_AA)
+                    cv2.putText(mirrored_frame, text, position, font, 1, (0, int(confidence * 255), int(255 - confidence * 255)), 2, cv2.LINE_AA)
                 elif result_type == 'translation':
                     if result != '':
                         self.sentence_label.setText(result)
@@ -130,7 +129,6 @@ class MainWindow(QMainWindow):
         bytes_per_line = 3 * width
         q_image = QImage(mirrored_frame_rgb.data, width, height, bytes_per_line, QImage.Format_RGB888)
         self.video_label.setPixmap(QPixmap.fromImage(q_image))
-
 
 
     def reset_recognized_text(self):
