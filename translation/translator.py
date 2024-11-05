@@ -13,5 +13,6 @@ class Translator:
 
     def translate(self, sentence):
         sentence = " ".join(sentence)
+        sentence = f"Przetłumacz zdanie z polskiego języka migowego na polski: {sentence} cel: "
         outputs = self.model.generate(self.tokenizer(sentence, return_tensors="pt")['input_ids'].to("cpu"))
         return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
