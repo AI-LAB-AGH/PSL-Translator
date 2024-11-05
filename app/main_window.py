@@ -4,8 +4,8 @@ from PyQt5.QtGui import QImage, QPixmap, QFont, QFontDatabase
 from PyQt5.QtCore import Qt, QTimer
 from app.components.video_capture import VideoCapture
 from app.components.menu_component import MenuComponent
-from components.video_capture import VideoCapture
-from components.menu_component import MenuComponent
+from app.components.video_capture import VideoCapture
+from app.components.menu_component import MenuComponent
 import cv2
 from app.components.side_panel import SidePanel
 from app.assets.shadow_effect import shadow_effect

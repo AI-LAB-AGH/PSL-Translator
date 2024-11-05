@@ -64,7 +64,7 @@ class GestureRecognitionHandler:
         else:
             return ''
 
-    def dumb_decode(self, sequence, window_width=3):
+    def dumb_decode(self, sequence, window_width=15):
         previous_token = sequence[0]
         current_count = 1
         clean_sequence = []
@@ -82,12 +82,12 @@ class GestureRecognitionHandler:
         
         return self.ctc_decode(clean_sequence)
 
-    def ctc_decode(self, sequence, blank_token='_'):
+    def ctc_decode(self, sequence):
         decoded_output = []
         
         previous_token = None
         for token in sequence:
-            if token != blank_token and token != previous_token:
+            if token != previous_token:
                 decoded_output.append(token)
             previous_token = token
         
