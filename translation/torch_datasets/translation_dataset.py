@@ -3,7 +3,7 @@ import random
 
 class TranslationDataset(Dataset):
 
-    def __init__(self, file_paths, reverse=False, transform=None, target_transform=None):
+    def __init__(self, file_paths, reverse=False, transform=None, target_transform=None, prompt=True):
         def read_from_file(file_path):
             with open(file_path, "r", encoding="UTF-8") as f:
                 for i, line in enumerate(f):
@@ -16,6 +16,7 @@ class TranslationDataset(Dataset):
         self.back = reverse
         self.transform = transform
         self.target_transform = target_transform
+        self.prompt = prompt
 
         if type(file_paths) is str:
             read_from_file(file_paths)
@@ -29,7 +30,9 @@ class TranslationDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        sample = f"Przetłumacz zdanie z polskiego języka migowego na polski: {self.data[idx][0]} cel: "
+        if self.prompt:
+            sample = f"Przetłumacz zdanie z polskiego języka migowego na polski: {self.data[idx][0]} cel: "
+        else: sample = self.data[idx][0]
         target = self.data[idx][1]
         if self.transform:
             sample = self.transform(sample)
