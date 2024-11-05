@@ -12,18 +12,8 @@ nltk.download('wordnet')
 
 
 def evaluate_hf_model(model_path, tokenizer_name, data_path):
-    def translate(sentence):
-        outputs = model.generate(tokenizer(sentence, return_tensors="pt")['input_ids'].to("cuda"))
-        return tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-    model = transformers.AutoModelForSeq2SeqLM.from_pretrained(
-        os.path.join(definitions.ROOT_DIR, model_path)).to('cuda')
-    tokenizer = transformers.AutoTokenizer.from_pretrained(tokenizer_name)
-    data = TranslationDataset(os.path.join(definitions.ROOT_DIR, data_path))
-    model.eval()
-
-    evaluator = Evaluator(model, tokenizer, translate, data)
-
+    data = TranslationDataset(os.path.join(definitions.ROOT_DIR, data_path), prompt=False)
+    evaluator = Evaluator(model_path, tokenizer_name, data)
     return evaluator.evaluate()
 
 
@@ -35,14 +25,16 @@ def evaluate_transformer(model_path, tokenizer_name, data_path):
 
 def main():
     results = []
-    results.append(evaluate_hf_model("translation/models/pretrained_models/allegro/plt5-large/checkpoint",
-                            "allegro/plt5-large", "translation/nlp_data/test_data.txt")),
     results.append(evaluate_hf_model("translation/models/pretrained_models/allegro/plt5-large-more-data/checkpoint",
+                                     "allegro/plt5-large", "translation/nlp_data/test_data.txt"))
+    results.append(evaluate_hf_model("translation/models/pretrained_models/allegro/plt5-large-more-data-1/checkpoint",
+                                     "allegro/plt5-large", "translation/nlp_data/test_data.txt"))
+    results.append(evaluate_hf_model("translation/models/pretrained_models/allegro/plt5-large-more-data-2/checkpoint",
                                      "allegro/plt5-large", "translation/nlp_data/test_data.txt"))
 
     df = pd.DataFrame(results)
     df.set_index("model_name", inplace=True)
-    df.to_csv("model_comparison_2.csv")
+    df.to_csv("model_comparison_updated_test_set.csv")
 
 
 if __name__ == "__main__":
