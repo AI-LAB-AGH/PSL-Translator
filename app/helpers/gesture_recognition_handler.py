@@ -3,7 +3,7 @@ from translation.translator import Translator
 
 
 class GestureRecognitionHandler:
-    def __init__(self, model, label_map, transform, confidence_threshold=0.8, window_width=60):
+    def __init__(self, model, label_map, transform, confidence_threshold=0.6, window_width=60):
         self.model = model
         self.actions = {value: key for key, value in label_map.items()}
         self.transform = transform
@@ -55,9 +55,10 @@ class GestureRecognitionHandler:
                 self.out.remove('blank')
             self.translation = self.translator.translate(self.out)
             print(self.translation)
-            #self.translation = ''
+            transl = self.translation
             self.out = []
-            return self.translation, confidence, 'translation'
+            self.translation = ''
+            return transl, confidence, 'translation'
             
         if len(self.tokens) > self.window_width:
             self.tokens.pop(0)
