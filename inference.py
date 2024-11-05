@@ -24,7 +24,7 @@ def inference(model, label_map, transform):
     actions = dict([(value, key) for key, value in label_map.items()])
     window_width = 60
     tokens = ['' for _ in range(window_width)]
-    threshold = 0.6
+    threshold = 0.8
     
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
