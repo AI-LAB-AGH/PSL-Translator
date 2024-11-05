@@ -11,7 +11,7 @@ from app.components.side_panel import SidePanel
 from app.assets.shadow_effect import shadow_effect
 
 class MainWindow(QMainWindow):
-    def __init__(self, prediction_handler, transform):
+    def __init__(self, prediction_handler, transform, model):
         super().__init__()
         id = QFontDatabase.addApplicationFont("app/assets/InriaSans-Regular.ttf")
         families = QFontDatabase.applicationFontFamilies(id)
@@ -23,6 +23,7 @@ class MainWindow(QMainWindow):
             
         self.prediction_handler = prediction_handler
         self.transform = transform
+        self.model = model
         self.setWindowTitle("Polish Sign Language Translator")
         self.setGeometry(100, 100, 1200, 800)
         self.center_window()
@@ -135,6 +136,8 @@ class MainWindow(QMainWindow):
         self.video_capture.set_recognized_text("")
 
     def toggle_start_stop(self):
+        self.model.initialize_cell_and_hidden_state()
+
         self.is_running = not self.is_running
         self.start_stop_button.setText("STOP" if self.is_running else "START")
         self.video_capture.set_show_text(True if self.is_running else False)
