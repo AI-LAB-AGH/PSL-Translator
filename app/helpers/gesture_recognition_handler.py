@@ -1,5 +1,6 @@
 import torch
-import cv2
+from translation.translator import Translator
+
 
 class GestureRecognitionHandler:
     def __init__(self, model, label_map, transform, confidence_threshold=0.9, window_width=60):
@@ -15,6 +16,8 @@ class GestureRecognitionHandler:
         self.out = []
         self.prev = ''
         self.no_gesture_frames = 0
+
+        self.translator = Translator()
 
     def process_frame(self, frame):
         x = self.transform([frame])
@@ -94,6 +97,5 @@ class GestureRecognitionHandler:
         return decoded_output
 
     def translate_gestures(self, gestures):
-        # TODO: add a proper translation
-        translation = ' '.join(gestures)
+        translation = self.translator.translate(gestures)
         return translation
