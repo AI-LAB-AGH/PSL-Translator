@@ -13,9 +13,13 @@ class Evaluator:
 
     def evaluate(self):
         bleu = self.bleu_evaluation()
+        print(f"evaluated {self.model.name_or_path} with BLEU score: {bleu}")
         rouge = self.rouge_evaluation()
+        print(f"evaluated {self.model.name_or_path} with ROUGE score: {rouge}")
         meteor = self.meteor_evaluation()
+        print(f"evaluated {self.model.name_or_path} with METEOR score: {meteor}")
         ter = self.ter_evaluation()
+        print(f"evaluated {self.model.name_or_path} with TER score: {ter}")
         return {"bleu": bleu, "rouge": rouge, "meteor": meteor, "ter": ter, "model_name": self.model.name_or_path}
 
     def bleu_evaluation(self):
