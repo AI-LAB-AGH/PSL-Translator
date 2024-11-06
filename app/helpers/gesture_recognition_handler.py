@@ -3,7 +3,7 @@ from translation.translator import Translator
 
 
 class GestureRecognitionHandler:
-    def __init__(self, model, label_map, transform, confidence_threshold=0.6, window_width=60):
+    def __init__(self, model, label_map, transform, confidence_threshold=0.8, window_width=60):
         self.model = model
         self.actions = {value: key for key, value in label_map.items()}
         self.transform = transform
@@ -48,7 +48,7 @@ class GestureRecognitionHandler:
         
         if confidence > self.threshold:
             self.model.initialize_cell_and_hidden_state()
-            print(f'{self.decoded}')
+        print(f'{self.out}')
         
         if len(self.out) > 1 and self.out[-1] == 'blank' and not self.translation:
             while 'blank' in self.out:
