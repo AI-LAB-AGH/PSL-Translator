@@ -50,7 +50,7 @@ class GestureRecognitionHandler:
             self.model.initialize_cell_and_hidden_state()
             print(f'{self.decoded}')
         
-        if len(self.out) > 1 and self.out[-1] == 'blank':
+        if len(self.out) > 1 and self.out[-1] == 'blank' and not self.translation:
             while 'blank' in self.out:
                 self.out.remove('blank')
             self.translation = self.translator.translate(self.out)
