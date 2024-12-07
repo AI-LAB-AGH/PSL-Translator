@@ -10,6 +10,7 @@ from models.model_LSTM import LSTMModel
 from models.model_forecaster import Forecaster
 from models.model_conv_LSTM import ConvLSTM
 from models.model_LSTM_transformer import LSTMTransformerModel
+from models.model_LSTM_transformer_2 import LSTMTransformerModel2
 from preprocessing.landmark_extraction.rtmpose import RTMPoseDetector
 from training import train, train_forecaster, display_results
 from preprocessing.transforms import ExtractLandmarksWithRTMP, ExtractOpticalFlow
@@ -44,20 +45,25 @@ def main():
 
     model_type = args.model
     dataset = args.dataset
-    root_dir_train = 'data/' + dataset + '/train'
-    root_dir_test = 'data/' + dataset + '/test'
-    annotations_train = 'data/' + dataset + '/annotations_train.csv'
-    annotations_test = 'data/' + dataset + '/annotations_test.csv'
-    labels = 'data/' + dataset + '/labels.json'
+    root_dir_train = 'data/preprocessed/' + dataset + '/train'
+    root_dir_test = 'data/preprocessed/' + dataset + '/test'
+    annotations_train = 'data/preprocessed/' + dataset + '/annotations_train.csv'
+    annotations_test = 'data/preprocessed/' + dataset + '/annotations_test.csv'
+    labels = 'data/preprocessed/' + dataset + '/labels.json'
+    print('labels:', labels)
+    print('root_dir_train:', root_dir_train)
     label_map = None
     actions = None
     if os.path.isfile(labels):
+        print('Loading labels...')
         with open(labels, 'r', encoding='utf-8') as f:
             label_map = json.load(f)
+
     if label_map is not None:
         actions = np.array(list(label_map.keys()))
         num_classes = 219
-    model_path = 'models/pretrained/' + model_type + '_' + dataset + '_' + '.pth'
+    # model_path = 'models/pretrained/' + model_type + '_' + dataset + '_' + '.pth'
+    model_path = 'models/pretrained/' + model_type + '_' + '7_12' + '_' + '.pth'
 
     # Landmark extraction methods
     if model_type in ['LSTM', 'Forecaster', 'LSTM-Transformer']:
@@ -96,6 +102,9 @@ def main():
 
         case 'LSTM-Transformer':
             model = LSTMTransformerModel(hidden_size, num_layers, num_classes, attention_dim)
+        
+        case 'LSTM-Transformer-2':
+            model = LSTMTransformerModel2(hidden_size, num_layers, num_classes, attention_dim)
             
         case 'Forecaster':
             model = LSTMModel(hidden_size, num_layers, input_size - 21*2*2)
@@ -134,6 +143,11 @@ def main():
                 train_dataset = RTMPDataset(root_dir_train)
                 print('Done. Loading testing set...')
                 test_dataset = RTMPDataset(root_dir_test)
+            
+            case _:
+                train_dataset = RTMPDataset(root_dir_train, transform, None)
+                print('Done. Loading testing set...')
+                test_dataset = RTMPDataset(root_dir_test, transform, None)
 
         print('Done. Starting training...')
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -144,6 +158,9 @@ def main():
         else:
             results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         display_results(results, actions)
+        results_path = model_type + '_' + '7_12' + '_' + '.json'
+        with open(results_path, 'w') as f:
+            json.dump(results, f)
 
     if model_type == 'ConvLSTM':
         inference_optical_flow(model, actions, transform=ExtractOpticalFlow())
