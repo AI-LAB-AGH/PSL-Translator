@@ -10,6 +10,8 @@ def train(model: torch.nn.Module,
           test_loader: torch.utils.data.DataLoader,
           num_epochs=10,
           lr = 0.001,
+          cut = 0,
+          skip_rate = 3,
           crit=torch.nn.CrossEntropyLoss,
           optim=torch.optim.Adam,
           save_path=None) -> dict:
@@ -31,10 +33,8 @@ def train(model: torch.nn.Module,
             outputs = None
             model.initialize_cell_and_hidden_state()
             while outputs is None:
-                cut = 0
-                # cut = int(len(inputs) * 0.1)
                 for frame in range(cut, len(inputs) - cut):
-                    skip = random.randint(0, 3)
+                    skip = random.randint(0, skip_rate)
                     if not skip:
                         x = inputs[frame]
                         outputs = model(x)

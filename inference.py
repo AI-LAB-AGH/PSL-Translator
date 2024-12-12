@@ -1,9 +1,6 @@
-import os
 import cv2
 import torch
-import random
 import mediapipe as mp
-import matplotlib.pyplot as plt
 
 from translation.translator import Translator
 

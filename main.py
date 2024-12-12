@@ -28,6 +28,8 @@ def get_args():
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
     parser.add_argument('--num_epochs', type=int, default=50, help='Number of training epochs')
     parser.add_argument('--batch_size', type=int, default=1, help='Training batch size')
+    parser.add_argument('--skip_rate', type=int, default=2, help='Skip rate for frames during training')
+    parser.add_argument('--cut', type=int, default=0, help='Percentage of sample to be removed from the start and end')
 
     # LSTM hyperparameters
     parser.add_argument('--num_layers', type=int, default=1, help='Number of LSTM layers')
@@ -64,6 +66,8 @@ def main():
     num_epochs = args.num_epochs
     batch_size = args.batch_size
     lr = args.lr
+    cut = args.cut
+    skip_rate = args.skip_rate
     criterion = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
     if model_type == 'LSTM' or model_type == 'Forecaster':
@@ -127,7 +131,7 @@ def main():
         if model_type == 'Forecaster':
             results = train_forecaster(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
         else:
-            results = train(model, train_loader, test_loader, num_epochs, lr, criterion, optimizer, model_path)
+            results = train(model, train_loader, test_loader, num_epochs, lr, cut, skip_rate, criterion, optimizer, model_path)
         display_results(results, actions)
     
     inference(model, label_map, transform)
