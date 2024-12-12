@@ -7,16 +7,16 @@ class LSTMModel(nn.Module):
         self.hidden_size = hidden_size
         self.num_layers = num_layers
 
-        self.l = nn.LSTM(21 * 2, hidden_size, num_layers)
-        self.r = nn.LSTM(21 * 2, hidden_size, num_layers)
-        self.f2l = nn.LSTM(21 * 2, hidden_size, num_layers)
-        self.f2r = nn.LSTM(21 * 2, hidden_size, num_layers)
-        self.h2h = nn.LSTM(21 * 2, hidden_size, num_layers)
-        
-        self.fuse = nn.Linear(5*hidden_size, num_classes)
-        # self.fc = nn.Linear(hidden_size, num_classes)
+        # Left with itself, left with face
+        self.left = nn.LSTM(21 * 3 + 21 * 3, hidden_size, num_layers)
+        # Right with itself, right with face
+        self.right = nn.LSTM(21 * 3 + 21 * 3, hidden_size, num_layers)
+        # Left with right
+        self.h2h = nn.LSTM(21 * 3, hidden_size, num_layers)
+        # Fuse
+        self.fc = nn.Linear(3*hidden_size, num_classes)
 
-        self.h_l = self.c_l = self.h_r = self.c_r = self.h_f2r = self.c_f2l = self.h_h2h = self.c_h2h = None
+        self.h_l = self.c_l = self.h_r = self.c_r = self.h_h2h = self.c_h2h = None
 
 
     def initialize_cell_and_hidden_state(self) -> None:
@@ -34,12 +34,6 @@ class LSTMModel(nn.Module):
         self.h_r = torch.zeros([self.num_layers, 1, self.hidden_size]) # Initial hidden state
         self.c_r = torch.zeros([self.num_layers, 1, self.hidden_size]) # Initial cell state
 
-        self.h_f2l = torch.zeros([self.num_layers, 1, self.hidden_size]) # Initial cell state
-        self.c_f2l = torch.zeros([self.num_layers, 1, self.hidden_size]) # Initial cell state
-
-        self.h_f2r = torch.zeros([self.num_layers, 1, self.hidden_size]) # Initial hidden state
-        self.c_f2r = torch.zeros([self.num_layers, 1, self.hidden_size]) # Initial hidden state
-
         self.h_h2h = torch.zeros([self.num_layers, 1, self.hidden_size]) # Initial hidden state
         self.c_h2h = torch.zeros([self.num_layers, 1, self.hidden_size]) # Initial cell state
 
@@ -49,9 +43,9 @@ class LSTMModel(nn.Module):
         x = x.unsqueeze(1)
 
         # Input dims: N x L x IN
-        source_body = x[0][0][0].clone()
-        source_left = x[0][0][100].clone()
-        source_right = x[0][0][121].clone()
+        source_face = x[0].clone()
+        source_left = x[1].clone()
+        source_right = x[2].clone()
 
         body = x[0][0][:17]
         left = x[0][0][91:112]
