@@ -14,12 +14,8 @@ This project is currently under development. While the core functionality is imp
 ## Installation
 Since the required models are not yet available, the installation instructions will be provided once they are released.
 
-## Demo Video 🎥
-[Watch the demo](path/to/demo-video.mp4)
-
-## Temporary UI
-
-![PSL-Translator UI](UI.png)
+## Quick Demo
+![PSL-Translator demo](demo.gif)
 
 ## Contributing
 We welcome contributions! If you'd like to help, feel free to open an issue or submit a pull request.
