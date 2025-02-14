@@ -9,7 +9,7 @@ This project is currently under development. While the core functionality is imp
 
 ## Features
 - **Real-time Gesture Recognition**: Captures and processes PSL signs from a webcam.
-- **NLP-based Translation**: Converts raw PSL transcripts into fluent Polish text using a fine-tuned PLT5 transformer model.
+- **NLP-based Translation**: Converts raw PSL transcripts into fluent Polish text using a, fine-tuned on synthetic dataset, PLT5 transformer model.
   
 ## Installation
 Since the required models are not yet available, the installation instructions will be provided once they are released.
@@ -17,7 +17,7 @@ Since the required models are not yet available, the installation instructions w
 ## Demo Video 🎥
 [Watch the demo](path/to/demo-video.mp4)
 
-## Current UI
+## Temporary UI
 
 ![PSL-Translator UI](UI.png)
 
