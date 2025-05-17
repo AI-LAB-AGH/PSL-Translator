@@ -1,8 +1,7 @@
 # Datasets and pretrained RTMPose
 data/
 preprocessing/end2end.onnx
-dvc/config.py
-dvc/tmp/*
+dvc/tmp/
 translation/data_collection/gpt_api_key.py
 .idea
 
