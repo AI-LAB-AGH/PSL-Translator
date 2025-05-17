@@ -1,3 +1,4 @@
+CONTAINER = "rgb"
 ACTION_TO_IDX = {
     'czesc': 0,
     'dzien dobry': 1,

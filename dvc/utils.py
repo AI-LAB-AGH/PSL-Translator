@@ -65,6 +65,5 @@ def countdown(cap, holistic):
                     cv2.LINE_AA)
         cv2.imshow('Camera', image)
 
-        # without cv2.waitKey the window freezes for some reason
         if cv2.waitKey(1) & 0xFF == 27:  # ESC key to exit
             break

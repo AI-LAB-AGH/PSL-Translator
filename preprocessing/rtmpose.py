@@ -1,15 +1,10 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import time
 from typing import List, Tuple
 
 import cv2
-import loguru
 import numpy as np
 import onnxruntime as ort
-
-logger = loguru.logger
-
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -440,7 +435,7 @@ class RTMPoseDetector:
         self.input_size = (w, h)
         self.confidence = confidence
 
-    def __call__(self, img):
+    def process(self, img):
         resized_img, center, scale = preprocess(img, self.input_size)
         outputs = inference(self.session, resized_img)
         landmarks, scores = postprocess(outputs, self.input_size, center, scale)
@@ -453,48 +448,3 @@ class RTMPoseDetector:
                 landmarks[i] = np.zeros((2))
 
         return landmarks
-
-
-def main():
-    cap = cv2.VideoCapture(0)
-    args = parse_args()
-    logger.info('Start running model on RTMPose...')
-
-    # read image from file
-    logger.info('1. Read image from {}...'.format(args.image_file))
-    # img = cv2.imread(args.image_file)
-
-    # build onnx model
-    logger.info('2. Build onnx model from {}...'.format(args.onnx_file))
-    sess = build_session(args.onnx_file, args.device)
-    h, w = sess.get_inputs()[0].shape[2:]
-    model_input_size = (w, h)
-
-    # preprocessing
-    logger.info('3. Preprocess image...')
-    while True:
-        success, img = cap.read()
-
-        # visualize(img, keypoints, scores, args.save_path)
-
-        show = cv2.imread(args.save_path)
-        cv2.imshow("Webcam", show)
-
-        if cv2.waitKey(1) == 32:
-            cv2.destroyAllWindows()
-            break
-
-    # inference
-    logger.info('4. Inference...')
-    start_time = time.time()
-    end_time = time.time()
-    logger.info('4. Inference done, time cost: {:.4f}s'.format(end_time -
-                                                               start_time))
-
-    # postprocessing
-    logger.info('5. Postprocess...')
-
-    # visualize inference result
-    logger.info('6. Visualize inference result...')
-
-    logger.info('Done...')

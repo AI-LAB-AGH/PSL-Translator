@@ -1,13 +1,13 @@
 import argparse
 
-from data_collection import DataCollector
-from data_upload import DataUploader
+from data_collector import DataCollector
+from data_uploader import DataUploader
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--command', type=str, default=None, help='Command to execute (rec, push, pull)')
     parser.add_argument('--dataset_path', type=str, default='data/RGB', help='Pull destination path')
-    parser.add_argument('--tmp_path', type=str, default='dvc_module/tmp', help='Push source path')
+    parser.add_argument('--tmp_path', type=str, default='dvc/tmp', help='Push source path')
 
     return parser.parse_args()
 
@@ -18,6 +18,9 @@ def main():
     command = args.command
     dataset_path = args.dataset_path
     tmp_path = args.tmp_path
+
+    if command is None:
+        raise Exception("Command missing")
 
     collector = DataCollector(tmp_path=tmp_path)
     uploader = DataUploader(dataset_path=dataset_path, tmp_path=tmp_path)

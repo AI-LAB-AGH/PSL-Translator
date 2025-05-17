@@ -3,8 +3,8 @@ import numpy as np
 import mediapipe as mp
 from pynput import keyboard
 
-from helpers import *
-from actions import ACTION_TO_IDX
+from utils import *
+from config import ACTION_TO_IDX
 
 
 class DataCollector:
@@ -61,6 +61,14 @@ class DataCollector:
         if frame is not None:
             image = cv2.resize(image, dsize=(160, 120), interpolation=cv2.INTER_CUBIC)
             cv2.imwrite(os.path.join(self.tmp_path, str(sample_num), f'{frame}.jpg'), image)
+
+    def resize(self):
+        for dir in os.listdir(self.tmp_path):
+            sample_path = os.path.join(self.tmp_path, dir)
+            
+            for filename in os.listdir(sample_path):
+                img = cv2.imread(os.path.join(sample_path, filename))
+                cv2.imwrite(os.path.join(sample_path, filename), img)
 
 
     def record_samples(self):
