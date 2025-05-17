@@ -2,17 +2,23 @@ import os
 import csv
 import shutil
 from azure.storage.blob import BlobServiceClient
-
-from config import CONNECT, CONTAINER
+from dotenv import load_dotenv
 
 class DataUploader:
     def __init__(self, dataset_path='data/test', tmp_path='data/test'):
         self.dataset_path = dataset_path
         self.tmp_path = tmp_path
 
+        load_dotenv()
+        connection_string = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
+        container_name = os.getenv('AZURE_STORAGE_CONTAINER')
+        
+        if not connection_string or not container_name:
+            raise ValueError("Missing required environment variables. Please ensure AZURE_STORAGE_CONNECTION_STRING and AZURE_STORAGE_CONTAINER are set in your .env file")
+        
         print('INFO: Establishing Azure connection')
-        blob_service_client = BlobServiceClient.from_connection_string(CONNECT)
-        self.container_client = blob_service_client.get_container_client(CONTAINER)
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        self.container_client = blob_service_client.get_container_client(container_name)
         print('INFO: Connection established')
 
         self.sample_count = self.count_samples()
